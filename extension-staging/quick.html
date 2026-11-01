@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>JW Quick Search</title>
+  <link rel="stylesheet" href="quick.css">
+</head>
+<body>
+  <div class="q" id="q" title="">
+    <div class="q-search">
+      <svg class="q-mag" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+      <input id="qInput" type="text" spellcheck="false" autocomplete="off" placeholder="Search effects, presets, layers, curves" title="Enter apply · Shift+Enter keep open · Ctrl+D favorite · Esc close">
+      <kbd class="q-key">Esc</kbd>
+    </div>
+    <div class="q-list" id="qList">
+      <i class="q-sel" id="qSel"></i>
+      <div id="qRows"></div>
+    </div>
+    <div class="q-foot">
+      <span><kbd>&uarr;</kbd><kbd>&darr;</kbd> select</span>
+      <span><kbd>Enter</kbd> apply</span>
+      <span><kbd>Shift</kbd>+<kbd>Enter</kbd> keep open</span>
+      <span><kbd>Ctrl</kbd>+<kbd>D</kbd> favorite</span>
+    </div>
+  </div>
+  <script src="compat.js"></script>
+<script src="quick.js"></script>
+</body>
+</html>

@@ -1,0 +1,743 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>JW Preset Applicator Pro</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="skin3.css">
+</head>
+<body>
+  <div class="app" id="app">
+
+    <!-- Preset -->
+    <section class="card" id="presetCard">
+      <div class="card-title">Preset</div>
+      <button class="gear-btn" id="gearBtn" title="Settings">
+        <svg viewBox="0 0 24 24"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="preset-field" id="presetField" title="Drop an .ffx file here">
+        <div class="preset-icon">
+          <svg viewBox="0 0 24 24"><path d="M5 3h9l5 5v13H5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M14 3v5h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="preset-info">
+          <div class="preset-name" id="presetName">No preset selected</div>
+          <div class="preset-path" id="presetPath">Browse or drop an .ffx file</div>
+        </div>
+        <button class="btn icon" id="previewBtn" title="Preview this preset (P)">
+          <svg viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+        </button>
+        <button class="btn" id="browseBtn">Browse</button>
+      </div>
+      <div class="preview-box" id="previewBox">
+        <div class="preview-stage">
+          <img id="previewImg" alt="">
+          <div class="preview-empty" id="previewEmpty">
+            <span id="previewMsg">No preview yet for this preset.</span>
+            <button class="btn" id="previewMake">Make preview</button>
+          </div>
+        </div>
+      </div>
+      <div class="set-row">
+        <div class="select-wrap set-wrap">
+          <select id="setSelect" title="Favorites folder"></select>
+          <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </div>
+        <div class="set-add" id="setAdd">
+          <input type="text" id="setName" list="setNames" placeholder="Folder name">
+          <datalist id="setNames"></datalist>
+          <button class="btn" id="setSave">Add</button>
+          <button class="btn ghost icon" id="setCancel" title="Cancel">&#x2715;</button>
+        </div>
+        <button class="btn" id="setAddBtn" title="Put the current preset in a folder">+ Folder</button>
+        <button class="btn ghost" id="setRemoveBtn" title="Take the current preset out of this folder">Remove</button>
+      </div>
+      <div class="fav-row">
+        <button class="btn icon" id="favPrev" title="Previous favorite">
+          <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="select-wrap">
+          <select id="favSelect"></select>
+          <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </div>
+        <button class="btn icon" id="favNext" title="Next favorite">
+          <svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="btn ghost" id="favClear" title="Clear favorites">Clear</button>
+      </div>
+    </section>
+
+    <!-- Tabs -->
+    <nav class="tabs" id="tabs">
+      <div class="tab-indicator" id="tabIndicator"></div>
+      <button class="tab" data-tab="home">Home</button>
+      <button class="tab" data-tab="tools">Tools</button>
+      <button class="tab" data-tab="effect">Effect</button>
+      <button class="tab" data-tab="precomp">Precomp</button>
+      <button class="tab" data-tab="adjustment">Adjust</button>
+      <button class="tab" data-tab="topaz">Quality</button>
+      <button class="tab" data-tab="layers">Layers</button>
+      <button class="tab" data-tab="ease">Ease</button>
+      <button class="tab" data-tab="audio">Audio</button>
+    </nav>
+
+    <main class="pages">
+
+      <!-- Effect -->
+      <!-- Home: one-click actions, recent and favorite presets (home.js) -->
+      <div class="page" data-page="home">
+        <section class="home-hero" id="homeHero">
+          <div class="hh-glow"></div>
+          <div class="hh-top">
+            <div>
+              <div class="hh-greet" id="hhGreet">Hey</div>
+              <div class="hh-comp" id="hhComp">No comp open</div>
+            </div>
+            <div class="hh-sel" id="hhSel"><b>0</b><span>selected</span></div>
+          </div>
+          <div class="hh-preset">
+            <i class="hh-thumb" id="hhThumb"></i>
+            <div class="hh-pinfo"><span class="hh-plabel">Current preset</span><b id="hhPname">None yet</b></div>
+            <button class="btn primary hh-apply" id="hhApply"><span class="label">Apply</span><span class="spinner"></span></button>
+          </div>
+          <div class="hh-stats" id="hhStats"></div>
+        </section>
+        <section class="card">
+          <div class="card-title">Session</div>
+          <div class="cr-session">
+            <div><b class="cr-timer" id="crTimer">0:00</b><span class="muted small" id="crToday">0:00 today</span></div>
+            <div class="cr-usage" id="crUsage" title="Time with After Effects open, last 7 days"></div>
+          </div>
+        </section>
+        <section class="card">
+          <div class="card-title">Project Health</div>
+          <div class="cr-stats" id="crHealth"><p class="muted small">Checking…</p></div>
+          <label class="switch"><input type="checkbox" data-opt="cr.optOrganize" checked><span class="track"><i></i></span>Sort loose items into folders</label>
+          <label class="switch"><input type="checkbox" data-opt="cr.optUnused" checked><span class="track"><i></i></span>Remove unused footage</label>
+          <label class="switch"><input type="checkbox" data-opt="cr.optDupes" checked><span class="track"><i></i></span>Merge duplicate footage</label>
+          <div class="row2">
+            <button class="btn tool" data-craft="optimize" title="One undo: sorts loose project items into Comps / Footage / Audio / Images / Solids, removes unused footage and merges duplicates">Optimize project</button>
+            <button class="btn tool" id="crHealthRefresh">Check again</button>
+          </div>
+        </section>
+        <section class="card">
+          <div class="card-title">Cache</div>
+          <div class="cr-stats" id="crCache"><p class="muted small">Measuring…</p></div>
+          <label class="switch"><input type="checkbox" data-opt="cr.cacheMedia"><span class="track"><i></i></span>Also delete the media cache</label>
+          <div class="row2">
+            <button class="btn tool" data-craft="cache" title="Clears After Effects' memory, then opens its own Empty Disk Cache prompt">Clean cache</button>
+            <button class="btn tool" id="crCacheRefresh">Measure again</button>
+          </div>
+        </section>
+      </div>
+
+      <!-- Tools: everyday helpers (craft.js + jsx/craft.jsx) -->
+      <div class="page" data-page="tools">
+        <section class="card">
+          <div class="card-title">Create</div>
+          <div class="cr-grid">
+            <button class="btn tool" data-craft="add" data-kind="solid" title="Comp-sized solid in the color below, above the selected layer">Solid</button>
+            <button class="btn tool" data-craft="add" data-kind="null" title="Null object for controls and parenting">Null</button>
+            <button class="btn tool" data-craft="add" data-kind="adjustment" title="Empty adjustment layer, ready for effects">Adjustment</button>
+            <button class="btn tool" data-craft="add" data-kind="camera" title="3D camera at the comp's center">Camera</button>
+            <button class="btn tool" data-craft="add" data-kind="light" title="Light of the type below">Light</button>
+            <label class="cr-color" title="Solid color"><input type="color" value="#000000" data-opt="cr.solidColor"><span class="muted small">Solid color</span></label>
+          </div>
+          <div class="seg" data-opt="cr.light">
+            <button data-val="point" class="on">Point</button>
+            <button data-val="spot">Spot</button>
+            <button data-val="parallel">Parallel</button>
+            <button data-val="ambient">Ambient</button>
+          </div>
+        </section>
+        <section class="card">
+          <div class="card-title">Layer Tools</div>
+          <div class="seg" data-opt="cr.fit">
+            <button data-val="fill" class="on">Fill</button>
+            <button data-val="fit">Fit</button>
+            <button data-val="stretch">Stretch</button>
+          </div>
+          <button class="btn tool" data-craft="fit" title="Scales the selected layers to the comp: Fill covers it, Fit shows all of the layer, Stretch matches both sides">Fit to comp</button>
+          <div class="seg" data-opt="cr.fb">
+            <button data-val="mix" class="on">Frame mix</button>
+            <button data-val="pixel">Pixel motion</button>
+            <button data-val="off">Off</button>
+          </div>
+          <label class="switch"><input type="checkbox" data-opt="cr.fbSel"><span class="track"><i></i></span>Only the selected layers</label>
+          <button class="btn tool" data-craft="frameBlend" title="Sets frame blending on every video layer in the comp (stills and solids are skipped) and turns on the comp's frame blending switch">Frame blending on all video</button>
+          <div class="row2">
+            <button class="btn tool" data-craft="clipboard" title="Pastes the image on your clipboard (or a copied image file) as a new layer at the playhead">Paste image</button>
+            <button class="btn tool" data-craft="screenshot" title="Saves the current frame of the comp to the export folder (Settings)">Comp screenshot</button>
+          </div>
+          <div class="seg" data-opt="cr.shot">
+            <button data-val="png" class="on">PNG</button>
+            <button data-val="jpg">JPEG</button>
+          </div>
+          <label class="switch"><input type="checkbox" data-opt="cr.shotOpen" checked><span class="track"><i></i></span>Show the screenshot in Explorer</label>
+        </section>
+        <section class="card">
+          <div class="card-title">Precomps &amp; Text</div>
+          <label class="switch"><input type="checkbox" data-opt="cr.unKeep"><span class="track"><i></i></span>Keep the precomp layer (turned off)</label>
+          <button class="btn tool" data-craft="unprecomp" title="Takes the layers out of the selected precomp into this comp, at the same time and place">Un-precompose</button>
+          <div class="seg" data-opt="cr.explode">
+            <button data-val="chars">Letters</button>
+            <button data-val="words" class="on">Words</button>
+            <button data-val="lines">Lines</button>
+          </div>
+          <button class="btn tool" data-craft="explode" title="Splits the selected text layer into one layer per letter, word or line, each in the same spot. The original is hidden.">Explode text</button>
+        </section>
+        <section class="card">
+          <div class="card-title">Markers &amp; Beats</div>
+          <div class="row2">
+            <button class="btn tool" data-craft="cutMarker" title="Trims the selected layers' ends to the first marker after the playhead">Cut to marker</button>
+            <button class="btn tool" data-craft="seqMarkers" title="Top selected layer starts at comp marker 1, the next at marker 2, and so on">Sequence by markers</button>
+          </div>
+          <label class="switch"><input type="checkbox" data-opt="cr.seqTrim" checked><span class="track"><i></i></span>Trim each layer at the next marker</label>
+          <div class="seg" data-opt="cr.beatMode">
+            <button data-val="grid" class="on">Beat grid</button>
+            <button data-val="hits">Every hit</button>
+          </div>
+          <div class="seg" data-opt="cr.beatSens">
+            <button data-val="low">Fewer</button>
+            <button data-val="med" class="on">Normal</button>
+            <button data-val="high">More</button>
+          </div>
+          <label class="switch"><input type="checkbox" data-opt="cr.beatKick"><span class="track"><i></i></span>Listen to the bass / kick only</label>
+          <label class="switch"><input type="checkbox" data-opt="cr.beatLayer"><span class="track"><i></i></span>Put markers on the layer, not the comp</label>
+          <button class="btn tool" data-craft="beats" title="Finds the beats in the selected song (file or precomp) and adds markers. Beat grid = steady tempo, Every hit = each drum hit.">Add beat markers</button>
+        </section>
+        <section class="card">
+          <div class="card-title">Auto Cut Silence</div>
+          <div class="fps-row">
+            <span class="muted">Silence is</span>
+            <div class="sc-tol"><input class="num" type="number" min="6" max="60" step="1" value="30" data-opt="cr.silDb"><span class="muted">dB quieter</span></div>
+          </div>
+          <div class="fps-row">
+            <span class="muted">Shortest pause cut</span>
+            <div class="sc-tol"><input class="num" type="number" min="100" max="5000" step="50" value="400" data-opt="cr.silMin"><span class="muted">ms</span></div>
+          </div>
+          <div class="fps-row">
+            <span class="muted">Keep around words</span>
+            <div class="sc-tol"><input class="num" type="number" min="0" max="1000" step="10" value="80" data-opt="cr.silPad"><span class="muted">ms</span></div>
+          </div>
+          <label class="switch"><input type="checkbox" data-opt="cr.silRipple" checked><span class="track"><i></i></span>Close the gaps</label>
+          <button class="btn tool" data-craft="silence" title="Cuts the quiet parts out of the selected audio, video or precomp layers. One undo.">Cut silence</button>
+        </section>
+        <section class="card">
+          <div class="card-title">Keyframes</div>
+          <div class="fps-row">
+            <span class="muted">Stretch to</span>
+            <div class="sc-tol"><input class="num" type="number" min="5" max="1000" step="5" value="150" data-opt="cr.stretch"><span class="muted">%</span></div>
+          </div>
+          <button class="btn tool" data-craft="stretch" title="Spreads the selected keyframes out (over 100%) or squeezes them (under 100%), from the first one. No keys selected = every key on the selected layers.">Stretch keyframes</button>
+          <div class="seg" data-opt="cr.motion">
+            <button data-val="soft">Soft</button>
+            <button data-val="medium" class="on">Medium</button>
+            <button data-val="strong">Strong</button>
+          </div>
+          <div class="row2">
+            <button class="btn tool" data-craft="motion" data-kind="bounce" title="Physical bounce after each keyframe (works best with linear keys). Select the property, or the layer for its keyed transforms.">Bounce</button>
+            <button class="btn tool" data-craft="motion" data-kind="elastic" title="Springy overshoot after each keyframe. Select the property, or the layer for its keyed transforms.">Elastic</button>
+          </div>
+          <button class="btn tool" data-craft="pathNulls" title="Select a Mask Path or shape Path: makes a null for every point, and the nulls move the points">Path to nulls</button>
+          <div class="cr-grid">
+            <button class="btn tool danger" data-craft="del" data-what="keyframes" title="Removes keyframes from the selected properties (or whole layers), keeping the value at the playhead">Delete keys</button>
+            <button class="btn tool danger" data-craft="del" data-what="expressions" title="Removes expressions from the selected properties (or whole layers)">Delete expr.</button>
+            <button class="btn tool danger" data-craft="del" data-what="effects" title="Removes every effect from the selected layers">Delete effects</button>
+          </div>
+        </section>
+      </div>
+
+      <!-- Browse: every preset as a tile (home.js) -->
+      <div class="page" data-page="browse" style="display:none">
+        <section class="card">
+          <div class="card-title">Preset Browser</div>
+          <div class="pb-tools">
+            <div class="pb-search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 16l4.5 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              <input type="text" id="pbSearch" placeholder="Search presets" spellcheck="false"></div>
+            <button class="btn tool pb-make" id="pbMake" title="Make animated previews for the presets shown that don't have one (uses After Effects, one at a time)">Make previews</button>
+          </div>
+          <div class="ly-chips" id="pbFolders"></div>
+          <div class="pb-sort" id="pbSort"><button data-sort="az" class="on">A–Z</button><button data-sort="recent">Recently used</button></div>
+          <div class="pb-grid" id="pbGrid"></div>
+          <button class="btn tool" id="pbMore">Show more</button>
+          <p class="muted small" id="pbInfo"></p>
+        </section>
+        <div class="pb-detail" id="pbDetail">
+          <i class="pb-dthumb" id="pbDthumb"></i>
+          <div class="pb-dinfo"><b id="pbDname"></b><span id="pbDfolder"></span></div>
+          <button class="btn tool pb-dprev" id="pbDprev" title="Make an animated preview of this preset (uses After Effects)">Preview</button>
+          <button class="btn primary pb-dapply" id="pbDapply"><span class="label">Apply</span><span class="spinner"></span></button>
+        </div>
+      </div>
+
+      <div class="page" data-page="effect">
+        <section class="card">
+          <div class="card-title">Effect Options</div>
+          <div class="grid">
+            <label class="switch"><input type="checkbox" data-opt="eff.stretch" checked><span class="track"><i></i></span>Stretch keys</label>
+            <label class="switch"><input type="checkbox" data-opt="eff.preserve" checked><span class="track"><i></i></span>Preserve easing</label>
+            <label class="switch"><input type="checkbox" data-opt="eff.onlyNew" checked><span class="track"><i></i></span>Only new effects</label>
+            <label class="switch"><input type="checkbox" data-opt="eff.keepSel" checked><span class="track"><i></i></span>Keep selection</label>
+            <label class="switch" title="After Effects twirls layers open to show a preset's keyframes. This closes them again (also for adjustment layers)."><input type="checkbox" data-opt="eff.closeLayers" checked><span class="track"><i></i></span>Keep layers closed</label>
+          </div>
+          <div class="fps-row">
+            <label class="switch"><input type="checkbox" data-opt="eff.twixtor"><span class="track"><i></i></span>Twixtor FPS</label>
+            <input class="num" type="number" min="1" step="1" value="60" data-opt="eff.fps" data-needs="eff.twixtor">
+          </div>
+          <label class="switch"><input type="checkbox" data-opt="eff.alternate" id="altToggle"><span class="track"><i></i></span>Alternate every other clip</label>
+          <div class="select-wrap alt-wrap" id="altWrap">
+            <select id="altSelect"></select>
+            <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </div>
+        </section>
+        <section class="card run" data-run="effect">
+          <div class="run-head"><span class="sel-badge"><b class="sel-count">0</b> selected</span><span class="run-status">Ready</span></div>
+          <div class="progress"><div class="fill"></div></div>
+          <button class="btn primary" data-action="effect"><span class="label">Apply Preset</span><span class="spinner"></span></button>
+          <div class="intensity" id="intensity">
+            <div class="intensity-head"><span class="muted">Intensity of last apply</span><b id="intensityVal">100%</b></div>
+            <input type="range" id="intensitySlider" min="0" max="200" step="5" value="100" disabled>
+          </div>
+        </section>
+        <section class="card">
+          <div class="card-title">Effect Tools</div>
+          <div class="grid">
+            <label class="switch"><input type="checkbox" data-opt="fx.copyStretch" checked><span class="track"><i></i></span>Stretch to each clip</label>
+            <label class="switch"><input type="checkbox" data-opt="fx.copyReplace"><span class="track"><i></i></span>Replace existing</label>
+          </div>
+          <button class="btn tool" data-tool="copyEffects">Copy effects</button>
+          <div class="row2">
+            <button class="btn tool" data-tool="stripLast" title="Removes the effects the last Apply Preset added">Remove last preset</button>
+            <button class="btn tool danger" data-tool="stripAll">Remove all effects</button>
+          </div>
+          <button class="btn tool" data-tool="fixRipple" title="Rebuilds every BCC Ripple Dissolve on the selected layers (or the whole comp) with the same settings, and clears a broken Layer to Reveal. Fixes the white flash after duplicating. One undo.">Fix Ripple Dissolve flash</button>
+        </section>
+      </div>
+
+      <!-- Precomp -->
+      <div class="page" data-page="precomp">
+        <section class="card">
+          <div class="card-title">Precomp</div>
+          <label class="field"><span>Name</span><input type="text" value="Precomp" data-opt="pre.name"></label>
+          <div class="seg" data-opt="pre.mode">
+            <button data-val="each" class="on">Each layer</button>
+            <button data-val="together">All together</button>
+          </div>
+          <div class="seg" data-opt="pre.attrs">
+            <button data-val="move" class="on">Move all attributes</button>
+            <button data-val="leave">Leave attributes</button>
+          </div>
+          <div class="grid">
+            <label class="switch"><input type="checkbox" data-opt="pre.trim" checked><span class="track"><i></i></span>Trim to span</label>
+            <label class="switch"><input type="checkbox" data-opt="pre.keepSel" checked><span class="track"><i></i></span>Select new</label>
+            <label class="switch wide"><input type="checkbox" data-opt="pre.smartNames" checked><span class="track"><i></i></span>Smart names (Precomp 01 - clip name)</label>
+          </div>
+        </section>
+        <section class="card run" data-run="precomp">
+          <div class="run-head"><span class="sel-badge"><b class="sel-count">0</b> selected</span><span class="run-status">Ready</span></div>
+          <div class="progress"><div class="fill"></div></div>
+          <button class="btn primary" data-action="precomp"><span class="label">Precompose</span><span class="spinner"></span></button>
+        </section>
+        <section class="card">
+          <div class="card-title">Timeline Tools</div>
+          <div class="fps-row">
+            <span class="muted">Sequence overlap</span>
+            <div class="sc-tol"><input class="num" type="number" min="0" max="120" step="1" value="0" data-opt="tl.overlap"><span class="muted">frames</span></div>
+          </div>
+          <div class="row2">
+            <button class="btn tool" data-tool="sequence" title="Lines the selected clips up end-to-end in time order">Sequence clips</button>
+            <button class="btn tool" data-tool="workArea" title="Sets the work area to the selected clips">Work area to selection</button>
+          </div>
+          <label class="switch"><input type="checkbox" data-opt="tl.compMarkers" checked><span class="track"><i></i></span>Use comp markers if a clip has none</label>
+          <button class="btn tool" data-tool="splitMarkers" title="Cuts each selected clip at its layer markers">Split at markers</button>
+          <button class="btn tool" data-tool="saveComp" title="Saves the open comp on its own as a new .aep (with only the footage and precomps it uses). Your project stays as it is.">Save comp as its own project</button>
+        </section>
+        <section class="card">
+          <div class="card-title">Label Colors</div>
+          <p class="muted small">Click a color to relabel the selected layers.</p>
+          <div class="lb-swatches"></div>
+          <button class="btn tool lb-rainbow"><span>Rainbow the selected layers</span></button>
+          <label class="field"><span>Precomps</span>
+            <div class="select-wrap"><select class="lb-select" data-lb="pre"></select>
+              <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+          </label>
+          <label class="field"><span>Adjust</span>
+            <div class="select-wrap"><select class="lb-select" data-lb="adj"></select>
+              <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+          </label>
+          <p class="muted small">Label for new precomps / adjustment layers. Rainbow = next color each time.</p>
+        </section>
+      </div>
+
+      <!-- Adjustment -->
+      <div class="page" data-page="adjustment">
+        <section class="card">
+          <div class="card-title">Adjustment Layers</div>
+          <label class="field"><span>Name</span><input type="text" value="Preset Adjustment" data-opt="adj.name"></label>
+          <div class="grid">
+            <label class="switch"><input type="checkbox" data-opt="adj.stretch" checked><span class="track"><i></i></span>Stretch keys</label>
+            <label class="switch"><input type="checkbox" data-opt="adj.preserve" checked><span class="track"><i></i></span>Preserve easing</label>
+            <label class="switch"><input type="checkbox" data-opt="adj.keepSel" checked><span class="track"><i></i></span>Keep originals</label>
+            <label class="switch"><input type="checkbox" data-opt="adj.selectNew"><span class="track"><i></i></span>Select new</label>
+            <label class="switch wide"><input type="checkbox" data-opt="adj.blackSolid"><span class="track"><i></i></span>Use black solids instead</label>
+            <label class="switch wide"><input type="checkbox" data-opt="adj.single"><span class="track"><i></i></span>One layer for all selected clips</label>
+          </div>
+          <div class="fps-row">
+            <label class="switch"><input type="checkbox" data-opt="adj.twixtor"><span class="track"><i></i></span>Twixtor FPS</label>
+            <input class="num" type="number" min="1" step="1" value="60" data-opt="adj.fps" data-needs="adj.twixtor">
+          </div>
+        </section>
+        <section class="card run" data-run="adjustment">
+          <div class="run-head"><span class="sel-badge"><b class="sel-count">0</b> selected</span><span class="run-status">Ready</span></div>
+          <div class="progress"><div class="fill"></div></div>
+          <button class="btn primary" data-action="adjustment"><span class="label">Create Adjustments</span><span class="spinner"></span></button>
+        </section>
+        <section class="card">
+          <div class="card-title">Label Colors</div>
+          <p class="muted small">Click a color to relabel the selected layers.</p>
+          <div class="lb-swatches"></div>
+          <button class="btn tool lb-rainbow"><span>Rainbow the selected layers</span></button>
+          <label class="field"><span>New ones</span>
+            <div class="select-wrap"><select class="lb-select" data-lb="adj"></select>
+              <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+          </label>
+          <p class="muted small">Label for new adjustment layers. Rainbow = next color each time.</p>
+        </section>
+        <section class="card">
+          <div class="card-title">Cut Flashes</div>
+          <div class="fps-row">
+            <span class="muted">Flash length</span>
+            <div class="sc-tol"><input class="num" type="number" min="1" max="30" step="1" value="3" data-opt="fl.frames"><span class="muted">frames</span></div>
+          </div>
+          <div class="seg" data-opt="fl.color">
+            <button data-val="white" class="on">White</button>
+            <button data-val="black">Black</button>
+          </div>
+          <label class="switch"><input type="checkbox" data-opt="fl.first"><span class="track"><i></i></span>Flash on the first clip too</label>
+          <button class="btn tool" data-tool="flashCuts" title="Adds a fading flash at every cut between the selected clips">Add flashes at cuts</button>
+        </section>
+        <section class="card">
+          <div class="card-title">Cut Joins</div>
+          <div class="fps-row">
+            <span class="muted">Cut</span>
+            <div class="sc-tol"><input class="num" type="number" min="1" max="60" step="1" value="4" data-opt="cj.frames"><span class="muted">frames per join</span></div>
+          </div>
+          <div class="seg" data-opt="cj.side">
+            <button data-val="split" class="on">Both sides</button>
+            <button data-val="next">Start of next</button>
+            <button data-val="prev">End of previous</button>
+          </div>
+          <p class="muted small">The cut pieces get no frame blending. The main clips keep theirs.</p>
+          <button class="btn tool" data-tool="cutJoins" title="Splits the frames at every join into their own layers (nothing moves) with frame blending off on those pieces only">Split frames at joins</button>
+        </section>
+      </div>
+
+      <!-- Topaz -->
+      <div class="page" data-page="topaz">
+        <section class="card">
+          <div class="card-title">Topaz Video AI</div>
+          <p class="muted small">Renders the selected layers in the background, enhances them with Topaz, then brings them back in. Keep editing while it runs.</p>
+          <div class="field"><span>Recipe</span>
+            <div class="select-wrap"><select id="tzRecipe"></select>
+              <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <button class="btn" id="tzRecipeSave" title="Save the current Topaz settings as a recipe">Save</button>
+            <button class="btn ghost icon" id="tzRecipeDel" title="Delete this recipe">&#x2715;</button>
+          </div>
+          <label class="field"><span>Preset</span>
+            <div class="select-wrap"><select id="tzPreset"></select>
+              <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+          </label>
+          <div class="tz-preset-info muted small" id="tzPresetInfo"></div>
+          <div class="field"><span>Save to</span>
+            <div class="tz-out" id="tzOut" title="">Next to the project</div>
+            <button class="btn" id="tzOutBtn">Change</button>
+          </div>
+          <div class="grid">
+            <label class="switch"><input type="checkbox" id="tzPlace" checked><span class="track"><i></i></span>Place above layer</label>
+            <label class="switch"><input type="checkbox" id="tzHideOrig"><span class="track"><i></i></span>Turn off original</label>
+            <label class="switch"><input type="checkbox" id="tzLowPri" checked><span class="track"><i></i></span>Low priority</label>
+            <label class="switch wide" title="Uses every CPU core and more RAM for background renders · much faster, but AE gets laggy while it runs"><input type="checkbox" id="tzTurbo"><span class="track"><i></i></span>Full speed (when you're not editing)</label>
+            <label class="switch wide"><input type="checkbox" id="tzKeep"><span class="track"><i></i></span>Keep the plain render too</label>
+          </div>
+        </section>
+        <section class="card run">
+          <div class="run-head"><span class="sel-badge"><b class="sel-count">0</b> selected</span><span class="run-status" id="tzStatus">Ready</span></div>
+          <button class="btn primary" id="tzSend"><span class="label">Send to Topaz</span><span class="spinner"></span></button>
+        </section>
+        <section class="card" id="qxCard">
+          <div class="card-title">Quick Export</div>
+          <p class="muted small">Renders the selected precomps (or the active comp's work area) in the background with After Effects' renderer.</p>
+          <label class="field"><span>Format</span>
+            <div class="select-wrap"><select id="qxTemplate"></select>
+              <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+          </label>
+          <div class="field"><span>Save to</span>
+            <div class="tz-out" id="qxOut" title="">Next to the project</div>
+            <button class="btn" id="qxOutBtn">Change</button>
+          </div>
+          <div class="grid">
+            <label class="switch"><input type="checkbox" id="qxRange" checked><span class="track"><i></i></span>Only the layer's range</label>
+            <label class="switch"><input type="checkbox" id="qxWhole"><span class="track"><i></i></span>Whole active comp</label>
+            <label class="switch wide"><input type="checkbox" id="qxImport" checked><span class="track"><i></i></span>Import into the project when done</label>
+            <label class="switch wide" title="Keeps rendering even if you open another project, reload or close this panel"><input type="checkbox" id="qxDetach" checked><span class="track"><i></i></span>Keep rendering if I switch projects</label>
+            <label class="switch wide" title="After a background render, re-renders sample frames safely and compares. Glitched, black or wrong stretches get re-rendered and spliced in. Also used for Topaz renders."><input type="checkbox" id="qxCheck" checked><span class="track"><i></i></span>Check &amp; fix glitched frames</label>
+          </div>
+          <button class="btn primary" id="qxSend"><span class="label">Export</span><span class="spinner"></span></button>
+        </section>
+        <section class="card">
+          <div class="card-title">Instant Preview</div>
+          <p class="muted small">Renders selected precomps in the background at full quality, then they play instantly. Edited one? Clear it and pre-render again.</p>
+          <div class="row2">
+            <button class="btn primary" id="pvSend"><span class="label">Pre-render selected</span><span class="spinner"></span></button>
+            <button class="btn tool" id="pvClear" title="Selected precomps, or every pre-render in the project when nothing is selected">Clear pre-renders</button>
+          </div>
+        </section>
+        <section class="card" id="tzJobsCard">
+          <div class="card-title">Background Jobs</div>
+          <div class="tz-jobs" id="tzJobs"><p class="muted small tz-empty">No jobs yet.</p></div>
+        </section>
+        <section class="card" id="sdCard">
+          <div class="card-title">Smart Scene Detect</div>
+          <p class="muted small">Finds every shot change in the selected clip, frame-exact, and splits it (or adds markers).</p>
+          <div class="sd-sens">
+            <div class="intensity-head"><span class="muted">Sensitivity</span><b id="sdSensVal">5</b></div>
+            <input type="range" id="sdSens" min="1" max="10" step="1" value="5" data-opt="sd.sens">
+            <div class="sd-scale muted small"><span>Fewer, surer cuts</span><span>Catch subtle cuts</span></div>
+          </div>
+          <div class="fps-row">
+            <span class="muted">Shortest shot</span>
+            <div class="sc-tol"><input class="num" type="number" min="1" max="60" step="1" value="6" data-opt="sd.minShot"><span class="muted">frames</span></div>
+          </div>
+          <div class="seg" data-opt="sd.mode">
+            <button data-val="layers" class="on">Split into layers</button>
+            <button data-val="markers">Add markers</button>
+          </div>
+          <label class="switch"><input type="checkbox" data-opt="sd.flash" checked><span class="track"><i></i></span>Ignore flashes and strobes</label>
+          <div class="run-head"><span class="sel-badge"><b class="sel-count">0</b> selected</span><span class="run-status" id="sdStatus">Ready</span></div>
+          <div class="progress" id="sdBar"><div class="fill"></div></div>
+          <button class="btn primary" id="sdRun"><span class="label">Detect Scenes</span><span class="spinner"></span></button>
+        </section>
+      </div>
+
+      <!-- Layers -->
+      <div class="page" data-page="layers">
+        <section class="card">
+          <div class="card-title">Save Layers</div>
+          <p class="muted small">Saves the selected layers or precomps with every effect, keyframe and everything inside precomps.</p>
+          <div class="ly-save">
+            <input type="text" id="lyName" placeholder="Name (optional)">
+            <div class="select-wrap ly-folder-wrap"><select id="lyFolder"></select>
+              <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+          </div>
+          <div class="run-head"><span class="sel-badge"><b class="sel-count">0</b> selected</span><span class="run-status" id="lyStatus">Ready</span></div>
+          <button class="btn primary" id="lySave"><span class="label">Save Selected Layers</span><span class="spinner"></span></button>
+        </section>
+        <section class="card">
+          <div class="card-title">Library</div>
+          <div class="ly-tools">
+            <div class="ly-search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M20 20l-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              <input type="text" id="lySearch" placeholder="Search saved layers"></div>
+            <button class="btn icon" id="lyRefresh" title="Refresh"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <button class="btn icon" id="lyOpenFolder" title="Open library folder"><svg viewBox="0 0 24 24"><path d="M3 7h6l2 2h10v10H3z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg></button>
+          </div>
+          <div class="ly-chips" id="lyChips"></div>
+          <div class="seg" data-opt="ly.at">
+            <button data-val="playhead" class="on">Insert at playhead</button>
+            <button data-val="selected">At selected layer</button>
+          </div>
+          <label class="switch" title="Presets saved in a different comp size are resized to fit the comp you insert into"><input type="checkbox" data-opt="ly.fit" checked><span class="track"><i></i></span>Fit to comp size</label>
+          <div class="ly-list" id="lyList"><p class="muted small">Loading&hellip;</p></div>
+        </section>
+        <section class="card" id="lyVfCard">
+          <div class="card-title">Verse Flow</div>
+          <p class="muted small" id="lyVfInfo">Looking for Verse Flow layer presets&hellip;</p>
+          <button class="btn tool" id="lyVfImport">Import from Verse Flow</button>
+        </section>
+      </div>
+
+      <!-- Ease -->
+      <div class="page" data-page="ease">
+        <section class="card ez-card">
+          <div class="ez-graph" id="ezGraph">
+            <svg id="ezSvg" viewBox="0 0 300 300">
+              <defs>
+                <linearGradient id="ezGrad" x1="0" y1="1" x2="1" y2="0"><stop offset="0"/><stop offset="1"/></linearGradient>
+              </defs>
+              <g id="ezGrid"></g>
+              <path id="ezGhost" class="ez-ghost"/>
+              <line id="ezArm1" class="ez-arm"/>
+              <line id="ezArm2" class="ez-arm"/>
+              <path id="ezCurve" class="ez-curve"/>
+              <circle id="ezDot" class="ez-dot" r="3.5"/>
+              <circle id="ezH1" class="ez-handle" r="6"/>
+              <circle id="ezH2" class="ez-handle" r="6"/>
+            </svg>
+          </div>
+          <div class="ez-bar">
+            <button class="ez-btn" id="ezRead" title="Read values from the selected keys"><svg viewBox="0 0 24 24"><path d="M3 12h11M10 7l5 5-5 5M20 4v16"/></svg></button>
+            <input type="text" id="ezText" class="ez-val" spellcheck="false" title="Edit bezier values (x1, y1, x2, y2)">
+            <button class="ez-btn" id="ezSave" title="Save as preset"><svg viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg></button>
+          </div>
+          <div class="ez-bar">
+            <div class="ez-dir" id="ezDir">
+              <button class="ez-btn" data-dir="out" title="Ease out"><svg viewBox="0 0 24 24"><path d="M3 21C3 11 9 3 21 3"/></svg></button>
+              <button class="ez-btn" data-dir="both" title="Ease"><svg viewBox="0 0 24 24"><path d="M3 21C13 21 11 3 21 3"/></svg></button>
+              <button class="ez-btn" data-dir="in" title="Ease in"><svg viewBox="0 0 24 24"><path d="M3 21C15 21 21 13 21 3"/></svg></button>
+            </div>
+            <button class="btn primary ez-apply" id="ezApply"><span class="label">Apply</span><span class="spinner"></span></button>
+          </div>
+        </section>
+        <section class="card ez-lib">
+          <div class="ez-bar">
+            <div class="select-wrap" id="ezLibWrap"><select id="ezLib" title="Library"></select>
+              <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <button class="ez-btn" id="ezNewLib" title="Create new library"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+            <button class="ez-btn" id="ezImportFile" title="Import library (.flow)"><svg viewBox="0 0 24 24"><path d="M12 3v11M7.5 9.5L12 14l4.5-4.5M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/></svg></button>
+            <button class="ez-btn" id="ezExport" title="Export library (.flow)"><svg viewBox="0 0 24 24"><path d="M12 14V3M7.5 7.5L12 3l4.5 4.5M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/></svg></button>
+            <button class="ez-btn" id="ezDelLib" title="Delete library"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg></button>
+          </div>
+          <div class="ez-presets" id="ezPresets"></div>
+          <button class="ez-flow" id="ezImportFlow" title="Bring in every Flow library on this PC">Import all libraries from Flow</button>
+        </section>
+      </div>
+
+      <!-- Audio: AI vocal remover (vocals.js) -->
+      <div class="page" data-page="audio">
+        <section class="card" id="vrCard">
+          <div class="card-title">Vocal Remover</div>
+          <p class="muted small" id="vrNote">Splits a song into vocals and instrumental with AI, right on this PC. Nothing is uploaded. Select song, video or precomp layers, or pick a file.</p>
+          <div class="seg" data-opt="vr.keep">
+            <button data-val="both" class="on">Both</button>
+            <button data-val="instrumental">Instrumental</button>
+            <button data-val="vocals">Vocals</button>
+          </div>
+          <div class="seg" data-opt="vr.quality">
+            <button data-val="fast">Fast</button>
+            <button data-val="best" class="on">Best quality</button>
+          </div>
+          <label class="switch"><input type="checkbox" data-opt="vr.mute" checked><span class="track"><i></i></span>Mute the original layer</label>
+          <div class="run-head"><span class="sel-badge"><b class="sel-count">0</b> selected</span><span class="run-status" id="vrStatus">Ready</span></div>
+          <div class="progress" id="vrBar"><div class="fill"></div></div>
+          <div class="row2">
+            <button class="btn primary" id="vrRun"><span class="label">Remove Vocals</span><span class="spinner"></span></button>
+            <button class="btn tool" id="vrFile" title="Separate a song file from your PC and add it at the playhead">Pick a file&hellip;</button>
+          </div>
+        </section>
+        <section class="card" id="sfxCard">
+          <div class="card-title">SFX Browser</div>
+          <div class="cr-chips" id="sfxFolders"></div>
+          <div class="row2">
+            <button class="btn tool" data-craft="sfxFolder" title="Add a folder of sound effects (subfolders included)">Add folder&hellip;</button>
+            <button class="btn tool" id="sfxRescan">Rescan</button>
+          </div>
+          <input class="cr-search" id="sfxSearch" type="search" placeholder="Search sounds…">
+          <div class="fps-row">
+            <span class="muted small" id="sfxCount"></span>
+            <div class="sc-tol"><span class="muted small">Volume</span><input type="range" min="0" max="100" value="80" data-opt="sfx.vol"></div>
+          </div>
+          <div class="sfx-list" id="sfxList"></div>
+          <p class="muted small">Click to listen · Add (or double-click) puts it at the playhead.</p>
+        </section>
+      </div>
+
+      <!-- Settings -->
+      <div class="page" data-page="settings">
+        <section class="card">
+          <div class="card-title">Turbo AE</div>
+          <label class="switch wide" title="Speed settings that never change quality. Turning it off puts your old settings back."><input type="checkbox" id="turboToggle"><span class="track"><i></i></span>Turbo After Effects</label>
+          <p class="muted small" id="turboInfo">Graphics-card rendering, every CPU core, idle caching. Never lowers quality. Off restores your settings.</p>
+        </section>
+        <section class="card">
+          <div class="card-title">Theme</div>
+          <div class="swatches" id="swatches"></div>
+          <label class="switch"><input type="checkbox" id="rainbowToggle"><span class="track"><i></i></span>Rainbow accent</label>
+          <label class="switch"><input type="checkbox" id="motionToggle"><span class="track"><i></i></span>Reduce motion</label>
+          <label class="switch wide" title="Ctrl+Space in After Effects opens a search popup at your mouse: effects, presets, saved layers and curves"><input type="checkbox" id="quickToggle"><span class="track"><i></i></span>Ctrl+Space quick search</label>
+          <p class="muted small" id="quickInfo">Ctrl+Space over After Effects opens a search for effects, presets, saved layers and curves at your mouse.</p>
+        </section>
+        <section class="card">
+          <div class="card-title">Exports &amp; Sounds</div>
+          <p class="muted small">Screenshots go to: <b id="crOutPath"></b></p>
+          <div class="row2">
+            <button class="btn tool" data-craft="outFolder">Choose folder&hellip;</button>
+            <button class="btn tool" data-craft="outReset">Next to project</button>
+          </div>
+          <label class="switch"><input type="checkbox" data-opt="cr.sounds"><span class="track"><i></i></span>Feedback sounds</label>
+          <button class="btn ghost" id="crSoundTest">Test sound</button>
+        </section>
+        <section class="card">
+          <div class="card-title">Effect Preview</div>
+          <p class="muted small" id="pvClipName">Previews play on a checkerboard.</p>
+          <div class="row2">
+            <button class="btn tool" id="pvClipPick">Choose clip&hellip;</button>
+            <button class="btn tool" id="pvClipReset">Use default</button>
+          </div>
+        </section>
+        <section class="card">
+          <div class="card-title">Hotkeys</div>
+          <label class="switch"><input type="checkbox" data-opt="hk.on" checked><span class="track"><i></i></span>Hotkeys on (when this panel is focused)</label>
+          <div class="hotkeys">
+            <span><kbd>Enter</kbd> run the current tab</span>
+            <span><kbd>[</kbd> <kbd>]</kbd> previous / next favorite</span>
+            <span><kbd>1</kbd>&ndash;<kbd>9</kbd> switch tabs</span>
+            <span><kbd>P</kbd> preset preview</span>
+            <span><kbd>G</kbd> smart scene detect</span>
+            <span><kbd>B</kbd> browse for a preset</span>
+          </div>
+        </section>
+        <section class="card">
+          <div class="card-title">Recent Actions</div>
+          <div class="log" id="actionLog"><p class="muted small">Nothing yet.</p></div>
+          <button class="btn ghost" id="logClear">Clear history</button>
+        </section>
+        <section class="card scroll-card">
+          <div class="card-title">Doomscroll</div>
+          <p class="muted small">TikTok in its own panel. Dock it next to your timeline and scroll while renders run.</p>
+          <div class="row2">
+            <button class="btn tool" id="scrollOpen">Open TikTok panel</button>
+            <button class="btn tool" id="scrollBrowser">Open in browser</button>
+          </div>
+        </section>
+        <section class="card">
+          <div class="card-title">Panel</div>
+          <p class="muted" id="reloadInfo">Saving any file in this extension's folder reloads the panel.</p>
+          <div class="row">
+            <button class="btn" id="reloadBtn">Reload Now</button>
+            <button class="btn ghost" id="resetBtn">Reset Settings</button>
+            <button class="btn ghost" id="welcomeAgain">Show welcome</button>
+          </div>
+          <p class="muted small" id="versionInfo"></p>
+        </section>
+      </div>
+    </main>
+
+    <div class="toasts" id="toasts"></div>
+  </div>
+  <script src="compat.js"></script>
+<script src="config.js"></script>
+  <script src="scenecut.js"></script>
+  <script src="scenedetect.js"></script>
+  <script src="panel.js"></script>
+  <script src="skin.js"></script>
+  <script src="renderfix.js"></script>
+  <script src="topaz.js"></script>
+  <script src="extras.js"></script>
+  <script src="layers.js"></script>
+  <script src="ease.js"></script>
+<script src="vocals.js"></script>
+  <script src="audiotools.js"></script>
+  <script src="craft.js"></script>
+  <script src="quickhost.js"></script>
+  <script src="home.js"></script>
+  <script src="welcome.js"></script>
+</body>
+</html>

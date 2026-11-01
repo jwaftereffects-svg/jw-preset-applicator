@@ -1,0 +1,269 @@
+/* JW Preset Applicator Pro - skin v3. Layered on top of style.css; visual only.
+ * Calmer hierarchy, title-case headers, icon tab dock, tinted tool buttons, refined controls.
+ * Every colour comes from the theme variables, so all themes keep working. */
+
+:root {
+  --r-card: 16px;
+  --r-ctl: 10px;
+  --line: rgba(var(--text-rgb), .07);
+  --line-strong: rgba(var(--text-rgb), .11);
+  --fill-1: rgba(var(--text-rgb), .04);
+  --fill-2: rgba(var(--text-rgb), .07);
+  --well: rgba(0, 0, 0, .24);
+  --font-ui: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  --font-head: "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+}
+
+html, body { font: 12px/1.45 var(--font-ui); letter-spacing: .05px; }
+body {
+  background:
+    radial-gradient(600px 300px at 15% -10%, rgba(var(--a1-rgb), .16), transparent 70%),
+    radial-gradient(500px 360px at 105% 25%, rgba(var(--a2-rgb), .11), transparent 70%),
+    radial-gradient(700px 420px at 40% 115%, rgba(var(--a1-rgb), .07), transparent 70%),
+    var(--bg);
+  background-attachment: fixed;
+}
+.app { gap: 10px; padding: 10px 10px 16px; }
+.app::-webkit-scrollbar, ::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* ---------------------------------------------------------------- cards */
+.card {
+  border-radius: var(--r-card);
+  padding: 44px 14px 14px;
+  gap: 10px;
+  background:
+    radial-gradient(140% 70% at 0% 0%, rgba(var(--a1-rgb), .055), transparent 55%),
+    linear-gradient(180deg, rgba(var(--text-rgb), .05), rgba(var(--text-rgb), .012) 55%),
+    rgba(var(--panel-rgb), .74);
+  border: 1px solid var(--line);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .055), 0 1px 0 rgba(0, 0, 0, .35), 0 20px 40px -30px rgba(0, 0, 0, 1);
+}
+.card:hover { transform: none; border-color: rgba(var(--a1-rgb), .2); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .07), 0 1px 0 rgba(0, 0, 0, .35), 0 22px 44px -30px rgba(var(--a1-rgb), .55); }
+.card.collapsed { padding-top: 44px; padding-bottom: 0; }
+.card.run { padding-top: 14px; }
+
+/* headers: title case, real text colour, icon chip */
+.card-title {
+  top: 12px; left: 14px;
+  font: 650 12.5px/20px var(--font-head);
+  letter-spacing: .1px; text-transform: none;
+  color: var(--text);
+  gap: 9px;
+}
+.card.foldable > .card-title { right: 14px; }
+.card-title::before { display: none; }
+.title-ic {
+  width: 22px; height: 22px; border-radius: 7px;
+  background: linear-gradient(140deg, rgba(var(--a1-rgb), .28), rgba(var(--a2-rgb), .14));
+  box-shadow: inset 0 0 0 1px rgba(var(--a1-rgb), .32), inset 0 1px 0 rgba(255, 255, 255, .12);
+  color: var(--hovertext);
+}
+.title-ic .ic { width: 12.5px; height: 12.5px; stroke-width: 2.2; }
+.card:hover .title-ic { box-shadow: inset 0 0 0 1px rgba(var(--a1-rgb), .55), inset 0 1px 0 rgba(255, 255, 255, .14), 0 0 14px -4px rgba(var(--a1-rgb), .9); }
+.card-title .fold-chev { opacity: .35; }
+.card.collapsed { opacity: .92; }
+.card.collapsed > .card-title { color: var(--sub); }
+
+/* the preset card on top: slightly richer */
+#presetCard {
+  background:
+    radial-gradient(120% 90% at 0% 0%, rgba(var(--a1-rgb), .14), transparent 60%),
+    radial-gradient(90% 90% at 100% 100%, rgba(var(--a2-rgb), .08), transparent 60%),
+    rgba(var(--panel-rgb), .84);
+  border-color: rgba(var(--a1-rgb), .2);
+}
+.preset-field { border-radius: 12px; background: var(--well); border-color: rgba(var(--text-rgb), .12); padding: 9px 9px 9px 10px; }
+.preset-icon { width: 34px; height: 34px; border-radius: 10px; }
+.preset-name { font: 650 13px var(--font-head); }
+
+/* ---------------------------------------------------------------- tab dock */
+.tabs {
+  gap: 2px; padding: 4px; border-radius: 14px;
+  background: rgba(var(--panel-rgb), .78);
+  border: 1px solid var(--line);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .05), 0 14px 30px -24px rgba(0, 0, 0, 1);
+  overflow: hidden;
+}
+.tab {
+  flex: 1 1 0; min-width: 26px; height: 36px; padding: 0;
+  flex-direction: row; gap: 6px;
+  border-radius: 10px;
+  font: 650 11.5px var(--font-ui);
+  color: var(--muted);
+  transition: color .2s, background .2s;
+}
+.tab:hover:not(.active) { color: var(--text); background: var(--fill-1); }
+.tab .tab-label { display: none; white-space: nowrap; }
+.tab.active { flex: 0 0 auto; padding: 0 12px; }
+.tab.active .tab-label { display: inline; animation: tabLabel .35s var(--smooth) both; }
+.tab-ic { width: 17px; height: 17px; opacity: .85; }
+.tab.active .tab-ic { opacity: 1; }
+.tab-indicator { top: 4px; bottom: 4px; border-radius: 10px; box-shadow: 0 6px 18px -6px rgba(var(--a1-rgb), .85), inset 0 1px 0 rgba(255, 255, 255, .35); }
+@keyframes tabLabel { from { opacity: 0; transform: translateX(-4px); } to { opacity: 1; transform: none; } }
+/* very narrow panel: icons only */
+@media (max-width: 329px) { .tab.active .tab-label { display: none; } .tab.active { padding: 0 10px; } }
+/* wide panel: every tab shows its name */
+@media (min-width: 620px) {
+  .tab, .tab.active { flex: 1 1 auto; padding: 0 8px; }
+  .tab .tab-label { display: inline; }
+}
+
+/* ---------------------------------------------------------------- buttons */
+.btn { border-radius: var(--r-ctl); font: 600 11.5px var(--font-ui); }
+.btn:focus-visible { box-shadow: 0 0 0 2px rgba(var(--a1-rgb), .65); }
+.btn:not(.primary):not(.tool) { background: var(--fill-1); border-color: var(--line-strong); }
+.btn:not(.primary):not(.tool):hover { background: rgba(var(--a1-rgb), .12); border-color: rgba(var(--a1-rgb), .45); color: var(--text); transform: none; box-shadow: none; }
+.btn.ghost { background: transparent !important; border-color: var(--line) !important; color: var(--sub); }
+
+.btn.tool {
+  height: 34px;
+  background: linear-gradient(180deg, rgba(var(--text-rgb), .06), rgba(var(--text-rgb), .03));
+  border: 1px solid var(--line-strong);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .045), 0 1px 2px rgba(0, 0, 0, .25);
+  color: var(--text);
+}
+.btn.tool .btn-ic { color: var(--a1); opacity: 1; }
+.btn.tool:hover {
+  transform: translateY(-1px);
+  background: linear-gradient(180deg, rgba(var(--a1-rgb), .16), rgba(var(--a1-rgb), .08));
+  border-color: rgba(var(--a1-rgb), .5);
+  color: var(--text);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .07), 0 8px 18px -10px rgba(var(--a1-rgb), .8);
+}
+.btn.tool:active { transform: scale(.98); }
+.btn.tool.danger .btn-ic { color: var(--bad); }
+.btn.tool.danger:hover { background: linear-gradient(180deg, rgba(255, 92, 103, .16), rgba(255, 92, 103, .07)); border-color: rgba(255, 92, 103, .55); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06), 0 8px 18px -10px rgba(255, 92, 103, .8); }
+.btn.tool.armed { border-color: rgba(var(--a1-rgb), .7); background: linear-gradient(180deg, rgba(var(--a1-rgb), .22), rgba(var(--a1-rgb), .1)); }
+
+/* tool buttons show a spinner while they work */
+.btn.tool.busy { pointer-events: none; color: transparent !important; }
+.btn.tool.busy .btn-ic { opacity: 0; }
+.btn.tool.busy::before {
+  content: ""; position: absolute; left: 50%; top: 50%; width: 14px; height: 14px; margin: -7px 0 0 -7px;
+  border: 2px solid rgba(var(--a1-rgb), .25); border-top-color: var(--a1); border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+.btn.tool.done:not(.busy) { animation: pop .45s var(--spring); }
+
+.btn.primary { height: 44px; border-radius: 13px; font: 700 13.5px var(--font-head); letter-spacing: .2px; }
+
+/* ---------------------------------------------------------------- controls */
+.seg { padding: 3px; gap: 2px; background: var(--well); border: 1px solid var(--line); border-radius: 11px; }
+.seg button { height: 26px; border-radius: 8px; font: 600 11px var(--font-ui); color: var(--muted); }
+.seg button:hover:not(.on) { color: var(--text); background: var(--fill-1); }
+.seg button.on {
+  color: var(--text);
+  background: linear-gradient(180deg, rgba(var(--a1-rgb), .26), rgba(var(--a1-rgb), .14));
+  box-shadow: inset 0 0 0 1px rgba(var(--a1-rgb), .45), inset 0 1px 0 rgba(255, 255, 255, .1), 0 2px 6px -2px rgba(0, 0, 0, .6);
+}
+
+.switch { gap: 10px; font-size: 12px; color: var(--sub); transition: color .2s; }
+.switch:hover { color: var(--text); }
+.switch input:checked ~ * { color: inherit; }
+.switch .track { width: 32px; height: 18px; background: rgba(var(--text-rgb), .12); box-shadow: inset 0 1px 2px rgba(0, 0, 0, .4); }
+.switch .track i { width: 14px; height: 14px; }
+.switch input:checked + .track i { transform: translateX(14px); }
+.switch:active input:checked + .track i { transform: translateX(11px); }
+
+select, .num, .field input, .cr-search, .pb-search input {
+  background: var(--well); border: 1px solid var(--line-strong); border-radius: var(--r-ctl);
+}
+select { height: 30px; }
+.stepper { background: var(--well); border-color: var(--line-strong); border-radius: var(--r-ctl); transition: opacity .2s; }
+.stepper.off { visibility: hidden; }
+.fps-row > .muted { color: var(--sub); }
+.muted.small, p.muted.small { font-size: 11px; line-height: 1.45; color: var(--muted); }
+.row2, .cr-grid { gap: 8px; }
+
+.sel-badge { border-radius: 99px; padding: 3px 10px; background: var(--well); }
+.progress { height: 5px; background: var(--well); }
+
+/* ---------------------------------------------------------------- home + tools details */
+.home-hero { border-radius: 18px; }
+.home-tile { border-radius: 14px; }
+.cr-color { height: 34px; border-radius: var(--r-ctl); background: var(--well); border-color: var(--line-strong); }
+.cr-stat { padding: 6px 2px; border-bottom-color: var(--line); }
+.cr-stat:last-child { border-bottom: none; }
+.cr-timer { font: 700 28px var(--font-head); letter-spacing: -.3px; background: linear-gradient(90deg, var(--text), var(--hovertext)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.cr-bar i { border-radius: 5px 5px 2px 2px; }
+.sfx-list { border-radius: 12px; background: var(--well); padding: 4px; border: 1px solid var(--line); }
+.sfx-list:empty { display: none; }
+.sfx-row { border-radius: 9px; }
+
+/* Recent presets: same tidy grid as Favorites (no sideways scrollbar) */
+.home-strip { display: grid; grid-auto-flow: row; grid-auto-columns: auto; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 10px 8px; overflow: visible; padding-bottom: 0; }
+.home-strip.empty { display: block; }
+.pb-grid { gap: 10px 8px; }
+.pb-thumb { border-radius: 12px; box-shadow: 0 6px 14px -10px rgba(0, 0, 0, .9); }
+.pb-tile .pb-name { color: var(--sub); }
+.pb-tile:hover .pb-name { color: var(--text); }
+.pb-tile.on .pb-name { color: var(--a1); font-weight: 700; }
+.pb-star { top: 5px; right: 7px; font-size: 10px; text-shadow: 0 1px 4px rgba(0, 0, 0, .9); }
+.pb-tile:hover .pb-thumb { transform: translateY(-2px); }
+
+/* toasts float a little higher with a softer edge */
+.toast { border-radius: 13px; backdrop-filter: blur(10px); }
+
+/* ================================================================ pass 2 */
+
+/* fine grain over the background so big dark areas don't look flat */
+body {
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .045 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    radial-gradient(600px 300px at 15% -10%, rgba(var(--a1-rgb), .16), transparent 70%),
+    radial-gradient(500px 360px at 105% 25%, rgba(var(--a2-rgb), .11), transparent 70%),
+    radial-gradient(700px 420px at 40% 115%, rgba(var(--a1-rgb), .07), transparent 70%),
+    var(--bg);
+  background-attachment: fixed;
+}
+
+/* every card gets a thin lit edge along the top in the theme colour */
+.card::before {
+  content: ""; position: absolute; left: 18px; right: 18px; top: -1px; height: 1px; pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(var(--a1-rgb), .55) 30%, rgba(var(--a2-rgb), .45) 70%, transparent);
+  opacity: .45; transition: opacity .3s;
+}
+.card:hover::before { opacity: .9; }
+
+/* Preset box: no header, tighter rows (more room on every tab) */
+#presetCard { padding: 12px 12px 12px; gap: 8px; }
+#presetCard > .card-title { display: none; }
+#presetCard .gear-btn { top: 24px; right: 12px; width: 30px; height: 30px; border-radius: 9px; border-color: var(--line); background: var(--fill-1); }
+#presetCard .gear-btn:hover { border-color: rgba(var(--a1-rgb), .45); background: rgba(var(--a1-rgb), .12); }
+#presetCard .gear-btn.on { border-color: rgba(var(--a1-rgb), .6); }
+#presetCard .preset-field { margin-right: 38px; }
+#presetCard .set-row, #presetCard .fav-row { gap: 6px; }
+#presetCard select, #presetCard .set-row .btn, #presetCard .fav-row .btn { height: 28px; }
+#presetCard .fav-row .btn.icon { width: 28px; }
+
+/* tab dock stays at the top while a page scrolls, on frosted glass */
+.tabs {
+  position: sticky; top: 0; z-index: 30;
+  background: rgba(var(--panel-rgb), .82);
+  -webkit-backdrop-filter: blur(16px) saturate(1.3); backdrop-filter: blur(16px) saturate(1.3);
+  /* last shadow paints the page colour into the gap above the bar so scrolled content can't peek out */
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06), 0 10px 24px -14px rgba(0, 0, 0, .95), 0 -12px 0 0 var(--bg);
+}
+
+/* main buttons that can't run yet: calm and clearly unavailable */
+.btn.primary:disabled {
+  opacity: 1; animation: none !important;
+  background: linear-gradient(180deg, rgba(var(--text-rgb), .07), rgba(var(--text-rgb), .035));
+  color: var(--muted); box-shadow: inset 0 0 0 1px var(--line-strong);
+}
+.btn.primary:disabled .btn-ic { opacity: .6; }
+.btn.tool:disabled { opacity: .4; }
+
+/* the hero on Home: a touch more presence */
+.home-hero { padding: 16px 16px 14px; }
+.hh-greet { font-size: 21px; }
+.hh-preset { border-radius: 14px; background: rgba(0, 0, 0, .28); }
+.hh-thumb { border-radius: 12px; }
+
+/* pages breathe a little between cards */
+.page { gap: 12px; }
+.app { gap: 12px; }
+
+/* motion off: keep it still */
+body.reduce .tab.active .tab-label, body.reduce .btn.tool.done { animation: none !important; }

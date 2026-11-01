@@ -1,0 +1,11 @@
+# build output
+dist/
+*.zip
+# local-only settings
+build/personal.json
+build/leak-patterns.txt
+# misc
+backups/
+*.log
+__pycache__/
+node_modules/

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ExtensionManifest Version="7.0" ExtensionBundleId="{{BUNDLE}}" ExtensionBundleVersion="{{VERSION}}" ExtensionBundleName="JW Preset Applicator Pro">
+  <ExtensionList>
+    <Extension Id="{{BUNDLE}}.panel" Version="{{VERSION}}"/>
+    <Extension Id="{{BUNDLE}}.scroll" Version="{{VERSION}}"/>
+    <Extension Id="{{BUNDLE}}.quick" Version="{{VERSION}}"/>
+  </ExtensionList>
+  <ExecutionEnvironment>
+    <HostList>
+      <!-- AE CC 2018 (15.0) and every version after it. Older AE can't run this panel
+           (its built-in browser has no CSS grid/variables). compat.js covers 2018-2021. -->
+      <Host Name="AEFT" Version="[15.0,99.9]"/>
+    </HostList>
+    <LocaleList>
+      <Locale Code="All"/>
+    </LocaleList>
+    <RequiredRuntimeList>
+      <RequiredRuntime Name="CSXS" Version="8.0"/>
+    </RequiredRuntimeList>
+  </ExecutionEnvironment>
+  <DispatchInfoList>
+    <Extension Id="{{BUNDLE}}.panel">
+      <DispatchInfo>
+        <Resources>
+          <MainPath>./index.html</MainPath>
+          <CEFCommandLine>
+            <Parameter>--enable-nodejs</Parameter>
+            <Parameter>--mixed-context</Parameter>
+          </CEFCommandLine>
+        </Resources>
+        <Lifecycle>
+          <AutoVisible>true</AutoVisible>
+        </Lifecycle>
+        <UI>
+          <Type>Panel</Type>
+          <Menu>JW Preset Applicator Pro</Menu>
+          <Geometry>
+            <Size><Width>420</Width><Height>720</Height></Size>
+            <MinSize><Width>300</Width><Height>360</Height></MinSize>
+          </Geometry>
+        </UI>
+      </DispatchInfo>
+    </Extension>
+    <!-- Ctrl+Space popup: shown at the mouse by helper/JWQuick.exe -->
+    <Extension Id="{{BUNDLE}}.quick">
+      <DispatchInfo>
+        <Resources>
+          <MainPath>./quick.html</MainPath>
+          <CEFCommandLine>
+            <Parameter>--enable-nodejs</Parameter>
+            <Parameter>--mixed-context</Parameter>
+          </CEFCommandLine>
+        </Resources>
+        <Lifecycle>
+          <AutoVisible>true</AutoVisible>
+        </Lifecycle>
+        <UI>
+          <Type>Modeless</Type>
+          <Menu>JW Quick Search</Menu>
+          <Geometry>
+            <Size><Width>380</Width><Height>72</Height></Size>
+            <MinSize><Width>200</Width><Height>40</Height></MinSize>
+            <MaxSize><Width>800</Width><Height>600</Height></MaxSize>
+          </Geometry>
+        </UI>
+      </DispatchInfo>
+    </Extension>
+    <!-- TikTok panel: loads an outside website, so it gets NO Node.js / file access -->
+    <Extension Id="{{BUNDLE}}.scroll">
+      <DispatchInfo>
+        <Resources>
+          <MainPath>./scroll.html</MainPath>
+          <CEFCommandLine>
+            <Parameter>--autoplay-policy=no-user-gesture-required</Parameter>
+            <!-- smooth video: draw and decode on the graphics card instead of the CPU -->
+            <Parameter>--ignore-gpu-blocklist</Parameter>
+            <Parameter>--enable-gpu-rasterization</Parameter>
+            <Parameter>--enable-zero-copy</Parameter>
+            <Parameter>--enable-accelerated-video-decode</Parameter>
+            <Parameter>--enable-native-gpu-memory-buffers</Parameter>
+            <Parameter>--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36</Parameter>
+          </CEFCommandLine>
+        </Resources>
+        <Lifecycle>
+          <AutoVisible>true</AutoVisible>
+        </Lifecycle>
+        <UI>
+          <Type>Panel</Type>
+          <Menu>JW Scroll (TikTok)</Menu>
+          <Geometry>
+            <Size><Width>380</Width><Height>680</Height></Size>
+            <MinSize><Width>300</Width><Height>400</Height></MinSize>
+          </Geometry>
+        </UI>
+      </DispatchInfo>
+    </Extension>
+  </DispatchInfoList>
+</ExtensionManifest>
