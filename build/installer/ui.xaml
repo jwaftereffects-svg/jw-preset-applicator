@@ -193,7 +193,7 @@
                 </LinearGradientBrush>
               </TextBlock.Foreground>
             </TextBlock>
-            <TextBlock Text="for Adobe After Effects  ·  v1.3" Foreground="{StaticResource Muted}" FontSize="12" Margin="0,8,0,0"/>
+            <TextBlock Text="for Adobe After Effects  ·  v1.4" Foreground="{StaticResource Muted}" FontSize="12" Margin="0,8,0,0"/>
           </StackPanel>
 
           <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom" Margin="30,0,0,28">
@@ -259,14 +259,26 @@
           <Grid x:Name="PageOptions">
             <StackPanel>
               <TextBlock Text="A couple of choices" FontSize="24" FontWeight="Bold"/>
-              <TextBlock Text="The defaults are what most people want." Foreground="{StaticResource Muted}" FontSize="13" Margin="0,8,0,22"/>
-              <CheckBox x:Name="OptUnsigned" Style="{StaticResource Switch}" IsChecked="True" Margin="0,0,0,18">
+              <TextBlock Text="The defaults are what most people want." Foreground="{StaticResource Muted}" FontSize="13" Margin="0,8,0,16"/>
+              <CheckBox x:Name="OptUnsigned" Style="{StaticResource Switch}" IsChecked="True" Margin="0,0,0,14">
                 <StackPanel>
                   <TextBlock Text="Let After Effects load this panel" FontWeight="SemiBold" FontSize="13"/>
                   <TextBlock Text="Needed for any panel that isn't from Adobe Exchange. Turns on Adobe's extension setting for your user." Foreground="{StaticResource Muted}" FontSize="12" TextWrapping="Wrap" Margin="0,2,0,0"/>
                 </StackPanel>
               </CheckBox>
-              <TextBlock Text="Nothing else is changed on your PC. To update or remove the panel later, run this setup again." Foreground="{StaticResource Muted}" FontSize="12" TextWrapping="Wrap"/>
+              <CheckBox x:Name="OptCaptions" Style="{StaticResource Switch}" IsChecked="True" Margin="0,0,0,14">
+                <StackPanel>
+                  <TextBlock Text="Auto captions (Audio tab)" FontWeight="SemiBold" FontSize="13"/>
+                  <TextBlock x:Name="CaptionsInfo" Text="Sets up the local speech engine: a one-time download of about 4 GB." Foreground="{StaticResource Muted}" FontSize="12" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                </StackPanel>
+              </CheckBox>
+              <CheckBox x:Name="OptFont" Style="{StaticResource Switch}" IsChecked="True" Margin="0,0,0,14">
+                <StackPanel>
+                  <TextBlock Text="Install TikTok Sans (pop-up captions font)" FontWeight="SemiBold" FontSize="13"/>
+                  <TextBlock Text="Free font (SIL Open Font License). Skipped if you already have it." Foreground="{StaticResource Muted}" FontSize="12" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                </StackPanel>
+              </CheckBox>
+              <TextBlock Text="To update or remove later, run this setup again." Foreground="{StaticResource Muted}" FontSize="12" TextWrapping="Wrap"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom">
               <Button x:Name="BackBtn" Style="{StaticResource Ghost}" Content="Back" Margin="0,0,10,0"/>

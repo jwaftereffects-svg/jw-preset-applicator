@@ -10,7 +10,7 @@
 //
 const fs = require("fs"), path = require("path"), cp = require("child_process"), os = require("os");
 
-const VERSION = "1.3.0";
+const VERSION = "1.4.0";
 const ROOT = path.resolve(__dirname, "..");
 const SRC = path.join(ROOT, "extension-staging");
 function readLocal(name, fallback) {
@@ -36,7 +36,10 @@ const T = TARGETS[which];
 if (!T) { console.error("usage: node build.js personal|release"); process.exit(1); }
 
 // files that make up the extension (anything else in staging is ignored)
-const FILES = ["compat.js", "index.html", "style.css", "skin3.css", "panel.js", "topaz.js", "extras.js", "welcome.js", "layers.js", "ease.js", "renderfix.js", "skin.js", "home.js", "scenecut.js", "scenedetect.js", "scroll.html", "quick.html", "quick.css", "quick.js", "quickhost.js", "vocals.js", "engine/vocals.py", "audiotools.js", "craft.js", "jsx/host.jsx", "jsx/library.jsx", "jsx/craft.jsx"];
+const FILES = ["compat.js", "index.html", "style.css", "skin3.css", "panel.js", "topaz.js", "extras.js", "welcome.js", "layers.js", "ease.js", "renderfix.js", "skin.js", "home.js", "scenecut.js", "scenedetect.js", "scroll.html", "quick.html", "quick.css", "quick.js", "quickhost.js", "vocals.js", "engine/vocals.py", "audiotools.js", "craft.js", "jsx/host.jsx", "jsx/library.jsx", "jsx/craft.jsx",
+  // Auto Captions (formerly the separate Sentence Studio panel)
+  "captions.js", "captions.css", "planner.js", "audio-cache.js", "jsx/captions.jsx",
+  "engine/worker.py", "engine/pin_overlay.py", "engine/timeline_hover.py"];
 
 // ExtendScript can't be trusted with raw non-ASCII, so escape it in scripts
 function escapeNonAscii(s) { return s.replace(/[^\x00-\x7F]/g, ch => "\\u" + ch.charCodeAt(0).toString(16).toUpperCase().padStart(4, "0")); }

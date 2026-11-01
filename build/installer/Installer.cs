@@ -16,6 +16,8 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -34,8 +36,8 @@ using Microsoft.Win32;
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 [assembly: System.Runtime.InteropServices.ComVisible(false)]
-[assembly: AssemblyVersion("1.3.0.0")]
-[assembly: AssemblyFileVersion("1.3.0.0")]
+[assembly: AssemblyVersion("1.4.0.0")]
+[assembly: AssemblyFileVersion("1.4.0.0")]
 
 namespace JWSetup
 {
@@ -56,7 +58,16 @@ namespace JWSetup
     {
         const string AppName = "JW Preset Applicator Pro";
         const string BundleId = "com.jwpresetapplicator.pro";
-        const string Version = "1.3.0";
+        const string Version = "1.4.0";
+        // Auto captions (formerly the separate Sentence Studio panel)
+        const string OldCaptionsBundle = "com.foxbo.sentencestudio";
+        const string OldCaptionsUninstallKey = @"Software\Microsoft\Windows\CurrentVersion\Uninstall\SentenceStudio";
+        const string FontFile = "TikTokSans-VariableFont_opsz,slnt,wdth,wght.ttf";
+        const string FontRegName = "TikTok Sans (TrueType)";
+        static readonly string LocalData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        string engineDir = Path.Combine(LocalData, @"SentenceStudio\engine");
+        string fontDir = Path.Combine(LocalData, @"Microsoft\Windows\Fonts");
+        readonly string oldCaptionsDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"Adobe\CEP\extensions\" + OldCaptionsBundle);
         // Extension runtimes to unlock: CSXS.8 = After Effects CC 2018 ... CSXS.12 = AE 2023+.
         // Goes past today's newest so future AE releases work without a new installer.
         const int CsxsFirst = 8, CsxsLast = 20;
@@ -83,6 +94,7 @@ namespace JWSetup
             {
                 extDir = Path.Combine(testDir, @"extensions\" + BundleId);
                 setupCopy = Path.Combine(testDir, @"setup\Setup.exe");
+                fontDir = Path.Combine(testDir, "fonts");
             }
             Title = AppName + " Setup";
             Width = 720; Height = 470;
@@ -143,6 +155,14 @@ namespace JWSetup
                 Btn("InstallBtn").Content = oldVer == Version ? "Repair" : "Update to " + Version;
                 Btn("UninstallBtn").Visibility = Visibility.Visible;
             }
+            // Auto captions: only offered when this setup carries the caption files
+            if (!HasCaptions)
+            {
+                Chk("OptCaptions").IsChecked = false; Chk("OptCaptions").Visibility = Visibility.Collapsed;
+                Chk("OptFont").IsChecked = false; Chk("OptFont").Visibility = Visibility.Collapsed;
+            }
+            else if (FindEngine() != null)
+                Txt("CaptionsInfo").Text = "The speech engine is already on this PC, so setup reuses it. Takes about a minute.";
             GoTo(0);
             if (startInUninstall) StartUninstall();
         }
@@ -282,11 +302,189 @@ namespace JWSetup
         void StartInstall()
         {
             bool unsigned = Chk("OptUnsigned").IsChecked == true;
+            bool captions = Chk("OptCaptions").IsChecked == true;
+            bool font = Chk("OptFont").IsChecked == true;
             GoTo(2);
             Txt("ProgressTitle").Text = "Installing";
-            var t = new Thread(delegate () { RunInstall(unsigned); });
+            var t = new Thread(delegate () { RunInstall(unsigned, captions, font); });
             t.IsBackground = true;
             t.Start();
+        }
+
+        // ---------------------------------------------------------------- auto captions (speech engine, template, font)
+        static bool HasCaptions { get { using (var s = Assembly.GetExecutingAssembly().GetManifestResourceStream("captions.zip")) return s != null; } }
+
+        // Minimal reader for flat JSON files like {"python": "...", ...}
+        static string JsonValue(string json, string key)
+        {
+            int k = json.IndexOf("\"" + key + "\"");
+            if (k < 0) return null;
+            int colon = json.IndexOf(':', k);
+            int q1 = colon < 0 ? -1 : json.IndexOf('"', colon + 1);
+            if (q1 < 0) return null;
+            var sb = new StringBuilder();
+            for (int i = q1 + 1; i < json.Length; i++)
+            {
+                char c = json[i];
+                if (c == '\\' && i + 1 < json.Length) { i++; char n = json[i]; sb.Append(n == 'n' ? '\n' : n == 't' ? '\t' : n); continue; }
+                if (c == '"') break;
+                sb.Append(c);
+            }
+            return sb.ToString();
+        }
+        static string JsonString(string s) { return "\"" + s.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\""; }
+
+        // The engine's folder if a working speech engine is already on this PC (ours, or one an older
+        // Sentence Studio setup pointed to), else null.
+        string FindEngine()
+        {
+            foreach (var dir in new string[] { extDir, oldCaptionsDir })
+            {
+                foreach (var name in new string[] { "captions-runtime.json", "runtime.json" })
+                {
+                    try
+                    {
+                        string json = File.ReadAllText(Path.Combine(dir, name)).TrimStart('﻿');
+                        string py = JsonValue(json, "python"), ff = JsonValue(json, "ffmpeg"), st = JsonValue(json, "state");
+                        if (py != null && ff != null && st != null && File.Exists(py) && File.Exists(ff)) return st;
+                    }
+                    catch { }
+                }
+            }
+            if (File.Exists(Path.Combine(engineDir, @"runtime\Scripts\python.exe")) && File.Exists(Path.Combine(engineDir, @"bin\ffmpeg.exe")) && File.Exists(Path.Combine(engineDir, "engine-ready.json")))
+                return engineDir;
+            return null;
+        }
+
+        // Unpacks the entries of captions.zip under `prefix` into `dest`.
+        static int ExtractCaptions(string prefix, string dest, Action<int, int> onFile)
+        {
+            int files = 0;
+            string full = Path.GetFullPath(dest);
+            if (!full.EndsWith("\\")) full += "\\";
+            using (var s = Assembly.GetExecutingAssembly().GetManifestResourceStream("captions.zip"))
+            using (var zip = new ZipArchive(s, ZipArchiveMode.Read))
+            {
+                var entries = new List<ZipArchiveEntry>();
+                foreach (var e in zip.Entries) if (e.FullName.Replace('\\', '/').StartsWith(prefix) && !e.FullName.EndsWith("/")) entries.Add(e);
+                for (int i = 0; i < entries.Count; i++)
+                {
+                    string rel = entries[i].FullName.Replace('\\', '/').Substring(prefix.Length);
+                    string target = Path.GetFullPath(Path.Combine(full, rel.Replace('/', Path.DirectorySeparatorChar)));
+                    if (!target.StartsWith(full, StringComparison.OrdinalIgnoreCase)) continue; // never write outside the folder
+                    Directory.CreateDirectory(Path.GetDirectoryName(target));
+                    using (var src = entries[i].Open())
+                    using (var dst = File.Create(target)) src.CopyTo(dst);
+                    files++;
+                    if (onFile != null) onFile(i + 1, entries.Count);
+                }
+            }
+            return files;
+        }
+
+        [DllImport("gdi32.dll", CharSet = CharSet.Unicode)] static extern int AddFontResource(string file);
+        [DllImport("user32.dll")] static extern IntPtr SendMessageTimeout(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam, uint flags, uint timeout, out IntPtr result);
+
+        void InstallFont()
+        {
+            string target = Path.Combine(fontDir, FontFile);
+            if (File.Exists(target)) { Log("TikTok Sans already installed", true); return; }
+            Directory.CreateDirectory(fontDir);
+            string tmp = Path.Combine(Path.GetTempPath(), "jw-font-" + Guid.NewGuid().ToString("N"));
+            ExtractCaptions("fonts/", tmp, null);
+            File.Copy(Path.Combine(tmp, FontFile), target);
+            if (TestMode) Log("[test] font copied to " + fontDir + " (not registered)", true);
+            else
+            {
+                using (var k = Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows NT\CurrentVersion\Fonts"))
+                    k.SetValue(FontRegName, target, RegistryValueKind.String);
+                try { AddFontResource(target); IntPtr r; SendMessageTimeout((IntPtr)0xffff, 0x001D, IntPtr.Zero, IntPtr.Zero, 2, 1000, out r); } catch { }
+                try { File.Copy(Path.Combine(tmp, "TikTokSans-OFL.txt"), Path.Combine(fontDir, "TikTokSans-OFL.txt"), true); } catch { }
+                Log("TikTok Sans installed for pop-up captions", true);
+            }
+            try { Directory.Delete(tmp, true); } catch { }
+        }
+
+        // Downloads the speech engine with the included Python (prints "@@ <percent> <message>" lines).
+        string InstallEngine(double lo, double hi)
+        {
+            string work = Path.Combine(LocalData, @"SentenceStudio\setup-temp\" + Guid.NewGuid().ToString("N"));
+            Progress(lo, "Unpacking the included Python…");
+            ExtractCaptions("engine-setup/", work, null);
+            var psi = new ProcessStartInfo(Path.Combine(work, @"python\python.exe"), "-I \"" + Path.Combine(work, "setup_engine.py") + "\" --state \"" + engineDir + "\"")
+            {
+                UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true,
+                WorkingDirectory = work, StandardOutputEncoding = new UTF8Encoding(false), StandardErrorEncoding = new UTF8Encoding(false)
+            };
+            psi.EnvironmentVariables["PYTHONUTF8"] = "1";
+            string error = null, lastStep = null;
+            using (var p = new Process { StartInfo = psi })
+            {
+                p.OutputDataReceived += delegate (object s, DataReceivedEventArgs e)
+                {
+                    if (e.Data == null) return;
+                    if (e.Data.StartsWith("@@ "))
+                    {
+                        int sp = e.Data.IndexOf(' ', 3), pct;
+                        if (sp < 0 || !int.TryParse(e.Data.Substring(3, sp - 3), out pct)) return;
+                        string msg = e.Data.Substring(sp + 1);
+                        if (lastStep != null) Log(lastStep, true);
+                        lastStep = msg;
+                        Progress(lo + (hi - lo) * pct / 100.0, msg + "…");
+                    }
+                    else if (e.Data.StartsWith("ERROR ")) error = e.Data.Substring(6);
+                };
+                p.ErrorDataReceived += delegate (object s, DataReceivedEventArgs e) { if (e.Data != null && error == null && e.Data.Contains("Error")) error = e.Data; };
+                p.Start(); p.BeginOutputReadLine(); p.BeginErrorReadLine();
+                p.WaitForExit();
+                if (p.ExitCode != 0)
+                    throw new Exception((error ?? "The speech engine setup stopped.") + " Check your internet connection and free space, then run setup again (finished downloads are reused). Log: " + Path.Combine(engineDir, "setup-log.txt"));
+            }
+            if (lastStep != null) Log(lastStep, true);
+            try { Directory.Delete(work, true); } catch { }
+            return engineDir;
+        }
+
+        void SetUpCaptions(bool font, double lo, double hi)
+        {
+            string engine = FindEngine(); // read before the old Sentence Studio panel is removed
+            if (font) InstallFont();
+            if (engine != null) { Log("Speech engine found, reusing it", true); Progress(hi - 4, null); }
+            else if (TestMode) { engine = engineDir; Log("[test] would download the speech engine into " + engine, true); Progress(hi - 4, null); }
+            else engine = InstallEngine(lo, hi - 4);
+            // the default animated-caption template (never overwrite one that's already there)
+            Directory.CreateDirectory(engine);
+            string templateTarget = Path.Combine(engine, "animation-template.aep");
+            if (File.Exists(templateTarget)) Log("Animated caption template already there, kept yours", true);
+            else
+            {
+                string tmp = Path.Combine(Path.GetTempPath(), "jw-template-" + Guid.NewGuid().ToString("N"));
+                ExtractCaptions("styles/", tmp, null);
+                File.Copy(Path.Combine(tmp, "animation-template.aep"), templateTarget);
+                try { Directory.Delete(tmp, true); } catch { }
+                Log("Animated caption template added", true);
+            }
+            // the panel looks in the default engine folder; point it elsewhere only when needed
+            if (!string.Equals(Path.GetFullPath(engine).TrimEnd('\\'), Path.GetFullPath(engineDir).TrimEnd('\\'), StringComparison.OrdinalIgnoreCase))
+            {
+                File.WriteAllText(Path.Combine(extDir, "captions-runtime.json"),
+                    "{\n  \"python\": " + JsonString(Path.Combine(engine, @"runtime\Scripts\python.exe")) + ",\n  \"ffmpeg\": " + JsonString(Path.Combine(engine, @"bin\ffmpeg.exe")) + ",\n  \"state\": " + JsonString(engine) + "\n}\n",
+                    new UTF8Encoding(false));
+            }
+            Log("Auto captions ready in the Audio tab", true);
+        }
+
+        // Auto captions used to be the separate Sentence Studio panel. Remove that panel (not its speech
+        // engine, which is reused) and what its 1.0 setup left behind, so there's only one extension.
+        void RemoveOldCaptionsPanel()
+        {
+            bool had = Directory.Exists(oldCaptionsDir);
+            if (TestMode) { if (had) Log("[test] would remove the separate Sentence Studio panel", true); return; }
+            try { if (had) Directory.Delete(oldCaptionsDir, true); } catch { Log("Couldn't remove the old Sentence Studio panel (close After Effects and run setup again)", false); return; }
+            try { Registry.CurrentUser.DeleteSubKeyTree(OldCaptionsUninstallKey, false); } catch { }
+            try { File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Programs), "Sentence Studio Setup.lnk")); } catch { }
+            try { File.Delete(Path.Combine(LocalData, @"SentenceStudio\Setup.exe")); } catch { }
+            if (had) Log("Removed the separate Sentence Studio panel (it's now in the Audio tab)", true);
         }
 
         // Older versions (1.2 and before) registered an Apps entry, kept a copy of the setup and
@@ -304,7 +502,7 @@ namespace JWSetup
             catch { }
         }
 
-        void RunInstall(bool unsigned)
+        void RunInstall(bool unsigned, bool captions, bool font)
         {
             try
             {
@@ -332,14 +530,19 @@ namespace JWSetup
                         using (var src = entry.Open())
                         using (var dst = File.Create(dest)) src.CopyTo(dst);
                         files++;
-                        Progress(20 + 40.0 * n / Math.Max(1, total), null);
-                        Thread.Sleep(25);
+                        Progress(10 + 20.0 * n / Math.Max(1, total), null);
+                        Thread.Sleep(15);
                     }
                 }
                 Log("Extension copied (" + files + " files)", true);
 
-                // 2. let After Effects load extensions installed outside Adobe Exchange
-                Progress(68, "Setting up After Effects…");
+                // 2. auto captions: speech engine, template, font; then retire the separate Sentence Studio panel
+                if (captions && HasCaptions) { Progress(32, "Setting up auto captions…"); SetUpCaptions(font, 32, 88); }
+                else if (font && HasCaptions) InstallFont();
+                RemoveOldCaptionsPanel();
+
+                // 3. let After Effects load extensions installed outside Adobe Exchange
+                Progress(90, "Setting up After Effects…");
                 Thread.Sleep(250);
                 if (unsigned && TestMode) Log("[test] would turn on PlayerDebugMode for CSXS." + CsxsFirst + "-" + CsxsLast, true);
                 else if (unsigned)
@@ -353,8 +556,8 @@ namespace JWSetup
                 }
                 else Log("Skipped the extension setting · the panel may not appear", false);
 
-                // 3. tidy up what older versions of this setup left behind
-                Progress(86, "Tidying up…");
+                // 4. tidy up what older versions of this setup left behind
+                Progress(96, "Tidying up…");
                 RemoveOldLeftovers();
                 Log("To update or remove later, just run this setup again", true);
 

@@ -80,7 +80,8 @@
     "Recent Actions": "clock", "Doomscroll": "phone", "Panel": "refresh",
     "Quick Actions": "bolt", "Recent Presets": "clock", "Favorites": "star", "Preset Browser": "grid", "Vocal Remover": "mic",
     "Create": "plus", "Layer Tools": "maximize", "Precomps & Text": "type", "Markers & Beats": "music", "Auto Cut Silence": "mute",
-    "Keyframes": "key", "Session": "play", "Project Health": "heart", "Cache": "drive", "SFX Browser": "music", "Exports & Sounds": "folder"
+    "Keyframes": "key", "Session": "play", "Project Health": "heart", "Cache": "drive", "SFX Browser": "music", "Exports & Sounds": "folder",
+    "Auto Captions": "type", "Review Words": "list", "Create Captions": "sparkle"
   };
   // the Tools tab buttons (data-craft), some by their data-kind / data-what
   var CRAFT = {
@@ -94,7 +95,9 @@
   var TOOLS = { copyEffects: "copy", stripLast: "undo", stripAll: "trash", fixRipple: "wave", sequence: "seq", workArea: "workarea", splitMarkers: "scissors", flashCuts: "bolt", cutJoins: "scissors", saveComp: "save" };
   var ACTIONS = { effect: "wand", precomp: "stack", adjustment: "sliders" };
   var IDS = { pbMake: "sparkle", pbMore: "grid", tzSend: "ai", qxSend: "film", pvSend: "play", pvClear: "trash", sdRun: "scan", lySave: "save", ezApply: "curve", browseBtn: "folder", vrRun: "mic", vrFile: "folder",
-    crHealthRefresh: "refresh", crCacheRefresh: "refresh", sfxRescan: "refresh", crSoundTest: "play", reloadBtn: "refresh", pvClipPick: "film", scrollOpen: "phone" };
+    crHealthRefresh: "refresh", crCacheRefresh: "refresh", sfxRescan: "refresh", crSoundTest: "play", reloadBtn: "refresh", pvClipPick: "film", scrollOpen: "phone",
+    "cc-transcribe": "mic", "cc-generate": "sparkle", "cc-selectedAudio": "target", "cc-browse": "folder", "cc-realign": "refresh", "cc-capture": "type",
+    "cc-editStyle": "palette", "cc-sSave": "save", "cc-sUpdate": "save", "cc-sDelete": "trash" };
 
   // tabs: icon, and the name in its own span (the dock shows it on the active tab)
   $$(".tab").forEach(function (t) {

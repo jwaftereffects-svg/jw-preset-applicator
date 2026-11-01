@@ -6,6 +6,7 @@
   <title>JW Preset Applicator Pro</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="skin3.css">
+  <link rel="stylesheet" href="captions.css">
 </head>
 <body>
   <div class="app" id="app">
@@ -632,6 +633,112 @@
             <button class="btn tool" id="vrFile" title="Separate a song file from your PC and add it at the playhead">Pick a file&hellip;</button>
           </div>
         </section>
+        <!-- Auto captions (captions.js + jsx/captions.jsx; formerly the Sentence Studio panel) -->
+        <div class="cc-root" id="cc-root">
+          <section class="card">
+            <div class="card-title">Auto Captions</div>
+            <p class="muted small">Detects every word on this PC (nothing is uploaded), then builds caption layers in your style.</p>
+            <p class="muted small warn-text" id="cc-engineNote" hidden></p>
+            <div class="cc-well">
+              <button class="cc-dropper" id="cc-dropper" title="Drag onto a layer in the AE timeline (or a source below), or click it and then select a layer in AE">
+                <svg viewBox="0 0 48 48"><path class="cc-dropper-fill" d="m28 8 12 12-5 5-3-3-15 15-8 2 2-8 15-15-3-3Z"/><path d="m18 27 7 7M26 16l6 6"/></svg>
+              </button>
+              <div class="cc-well-text"><strong id="cc-pickerTitle">Pick audio</strong><span id="cc-pickerHint">Drag the pin onto a layer, or click it and then select a layer in AE</span></div>
+            </div>
+            <div class="cc-targets" id="cc-pickerTargets" hidden>
+              <div class="cc-targets-head"><span>Drop on a source</span><button class="btn ghost" id="cc-cancelPicker">Cancel <kbd>Esc</kbd></button></div>
+              <div class="cc-target-list" id="cc-targetList"></div>
+            </div>
+            <div class="cc-source">
+              <span class="cc-source-ic">&#9835;</span>
+              <div class="cc-grow"><strong id="cc-audioName">No audio linked yet</strong><small id="cc-sourceMeta">Select a layer in AE, or pick a file.</small></div>
+              <span class="cc-badge" id="cc-sourceBadge">No source</span>
+            </div>
+            <audio id="cc-audio" class="cc-audio" controls preload="metadata"></audio>
+            <div class="row2">
+              <button class="btn tool" id="cc-selectedAudio" title="Link the audio, video or precomp layer selected in AE">Use selected layer</button>
+              <button class="btn tool" id="cc-browse" title="Pick an audio or video file from your PC">Browse file&hellip;</button>
+            </div>
+            <label class="switch"><input type="checkbox" id="cc-followSelection"><span class="track"><i></i></span>Follow AE selection</label>
+            <div class="fps-row">
+              <span class="muted">Language</span>
+              <div class="select-wrap cc-select"><select id="cc-language"><option value="auto">Auto detect</option><option value="en">English</option><option value="es">Spanish</option><option value="fr">French</option><option value="de">German</option><option value="pt">Portuguese</option><option value="ja">Japanese</option><option value="ko">Korean</option></select><svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+            </div>
+            <input class="cc-input" id="cc-hints" type="text" placeholder="Names, slang or unusual words (optional)">
+            <div class="fps-row">
+              <span class="muted">Timeline start</span>
+              <div class="sc-tol"><input class="num" id="cc-offset" type="number" value="0" step="0.001" min="0"><span class="muted">sec</span></div>
+            </div>
+            <button class="btn primary" id="cc-transcribe"><span class="label">Detect speech</span><span class="spinner"></span></button>
+            <div class="cc-progress" id="cc-engineProgress" hidden>
+              <div class="run-head"><span class="run-status" id="cc-enginePhase">Listening&hellip;</span><b id="cc-progressPercent">0%</b></div>
+              <div class="progress" id="cc-progressTrack"><div class="fill" id="cc-progressFill"></div></div>
+            </div>
+            <div class="cc-status"><span class="cc-dot" id="cc-statusDot"></span><span id="cc-status">Ready when you are.</span><button class="btn ghost cc-reset" id="cc-reload" title="Clear the linked audio, words and captions preview">Reset</button></div>
+          </section>
+
+          <section class="card">
+            <div class="card-title">Review Words</div>
+            <div class="cc-review-head">
+              <div class="seg cc-tabs"><button class="cc-tab on" data-cc-tab="words">Word timing</button><button class="cc-tab" data-cc-tab="transcript">Correct transcript</button></div>
+              <span class="cc-badge" id="cc-wordCount">0 words</span>
+            </div>
+            <div id="cc-wordsPane"><div class="cc-words" id="cc-words"></div></div>
+            <div id="cc-transcriptPane" hidden>
+              <textarea class="cc-textarea" id="cc-transcript" rows="6" placeholder="Correct words, add missing ones, or paste the exact spoken transcript."></textarea>
+              <button class="btn tool" id="cc-realign" title="Recalculate the word timings for your corrected transcript">Realign corrected words</button>
+            </div>
+            <p class="muted small" id="cc-reviewNote">Listen once and fine-tune the moments that matter.</p>
+          </section>
+
+          <section class="card">
+            <div class="card-title">Create Captions</div>
+            <div class="fps-row"><span class="muted">Style</span><div class="select-wrap cc-select"><select id="cc-captionStyle"><option value="template">Animated &middot; your template</option><option value="popup">Pop-up &middot; TikTok Sans</option><option value="widescreen">Widescreen &middot; word by word</option></select><svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div></div>
+            <button class="btn tool" id="cc-editStyle" title="Make your own caption style, starting from the one picked above">Customize this style&hellip;</button>
+            <div class="cc-editor" id="cc-editor" hidden>
+              <p class="muted small" id="cc-editorNote">Starting from Pop-up. Change anything, then save it as a new style.</p>
+              <input class="cc-input" id="cc-sName" type="text" placeholder="Style name" maxlength="40">
+              <div class="fps-row"><span class="muted">Font</span><input class="cc-input cc-font" id="cc-sFont" type="text" list="cc-fontList" placeholder="e.g. Arial-BoldMT" spellcheck="false"></div>
+              <datalist id="cc-fontList"></datalist>
+              <div class="fps-row"><span class="muted">Size (0 = fit comp)</span><div class="sc-tol"><input class="num" id="cc-sSize" type="number" min="0" max="800" step="1" value="70"><span class="muted">px</span></div></div>
+              <div class="fps-row"><span class="muted">Text colour</span><label class="cr-color"><input type="color" id="cc-sFill" value="#ffffff"></label></div>
+              <label class="switch"><input type="checkbox" id="cc-sStroke"><span class="track"><i></i></span>Outline</label>
+              <div class="fps-row cc-indent"><span class="muted">Outline colour &middot; thickness</span><div class="sc-tol"><label class="cr-color"><input type="color" id="cc-sStrokeColor" value="#000000"></label><input class="num" id="cc-sStrokeWidth" type="number" min="1" max="40" step="1" value="11"><span class="muted">%</span></div></div>
+              <label class="switch"><input type="checkbox" id="cc-sCaps"><span class="track"><i></i></span>ALL CAPS</label>
+              <label class="switch"><input type="checkbox" id="cc-sShadow"><span class="track"><i></i></span>Drop shadow</label>
+              <div class="fps-row"><span class="muted">Letter spacing</span><div class="sc-tol"><input class="num" id="cc-sTracking" type="number" min="-200" max="400" step="10" value="0"></div></div>
+              <div class="fps-row"><span class="muted">Blend mode</span><div class="select-wrap cc-select"><select id="cc-sBlend"><option value="normal">Normal</option><option value="difference">Difference</option><option value="add">Add</option><option value="screen">Screen</option><option value="overlay">Overlay</option><option value="softlight">Soft Light</option><option value="multiply">Multiply</option></select><svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div></div>
+              <div class="seg" id="cc-sBuild"><button data-val="all" class="on">Whole caption at once</button><button data-val="word">Word by word</button></div>
+              <div class="fps-row"><span class="muted">Text before each caption</span><input class="cc-input cc-short" id="cc-sPrefix" type="text" placeholder="e.g. - " maxlength="8"></div>
+              <div class="fps-row"><span class="muted">Height</span><div class="sc-tol"><input class="num" id="cc-sY" type="number" min="0" max="100" step="1" value="50"><span class="muted">% from top</span></div></div>
+              <div class="cc-preview" id="cc-stylePreview"><span>Your caption looks like this</span></div>
+              <div class="row2">
+                <button class="btn tool" id="cc-sSave">Save as new style</button>
+                <button class="btn tool" id="cc-sUpdate" hidden>Update this style</button>
+              </div>
+              <div class="row2">
+                <button class="btn tool danger" id="cc-sDelete" hidden>Delete style</button>
+                <button class="btn ghost" id="cc-sClose">Close</button>
+              </div>
+            </div>
+            <div class="fps-row"><span class="muted">Caption length</span><div class="select-wrap cc-select"><select id="cc-maxWords"><option value="smart">Smart &middot; 6&ndash;7 max</option><option value="5">5 words max</option><option value="6">6 words max</option><option value="7">7 words max</option></select><svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div></div>
+            <div class="fps-row"><span class="muted">Line layout</span><div class="select-wrap cc-select"><select id="cc-lineLayout"><option value="balanced">Balanced &middot; two lines</option><option value="width">Wrap when too wide</option></select><svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div></div>
+            <div class="fps-row"><span class="muted">Safe text width</span><div class="select-wrap cc-select"><select id="cc-width"><option value="0.8">80% &middot; comfortable</option><option value="0.7">70% &middot; compact</option><option value="0.9">90% &middot; wide</option></select><svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div></div>
+            <div class="fps-row"><span class="muted">Split on pauses over</span><div class="sc-tol"><input class="num" id="cc-pause" type="number" min="0.1" step="0.05" value="0.25"><span class="muted">sec</span></div></div>
+            <div class="fps-row"><span class="muted">Fade-out (animated)</span><div class="sc-tol"><input class="num" id="cc-fadeOut" type="number" min="0.05" step="0.01" value="2.2"><span class="muted">sec</span></div></div>
+            <div class="fps-row" id="cc-popupSizeRow"><span class="muted">Pop-up size</span><div class="sc-tol"><input class="num" id="cc-popupSize" type="number" min="8" max="400" step="1" value="70"><span class="muted">px</span></div></div>
+            <div class="fps-row" id="cc-popupYRow"><span class="muted">Height</span><div class="sc-tol"><input class="num" id="cc-popupY" type="number" min="0" max="100" step="1" value="50"><span class="muted">% from top</span></div></div>
+            <div class="cc-groups" id="cc-groups"></div>
+            <button class="btn primary" id="cc-generate"><span class="label">Create captions</span><span class="spinner"></span></button>
+            <p class="muted small">Editable AE layers. Creating again replaces the captions made before in this comp.</p>
+            <div class="cc-template">
+              <div class="cc-grow"><span class="muted small">Animation template</span><strong id="cc-templateName">Original text animation</strong><small id="cc-templateMeta">Fade in &middot; 2.20s fade out &middot; tracking</small></div>
+              <span class="cc-badge" id="cc-templateState">Ready</span>
+            </div>
+            <button class="btn tool" id="cc-capture" title="Select a text layer with an entrance, exit and tracking animation, then click to use it for Animated captions">Capture selected text as template</button>
+          </section>
+        </div>
+
         <section class="card" id="sfxCard">
           <div class="card-title">SFX Browser</div>
           <div class="cr-chips" id="sfxFolders"></div>
@@ -736,6 +843,13 @@
 <script src="vocals.js"></script>
   <script src="audiotools.js"></script>
   <script src="craft.js"></script>
+  <div class="cc-ghost" id="cc-pickerGhost" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="m28 8 12 12-5 5-3-3-15 15-8 2 2-8 15-15-3-3Z"/><path d="m18 27 7 7M26 16l6 6"/></svg></div>
+  <svg class="cc-cable" id="cc-pickerCable" aria-hidden="true"><path class="cc-cable-shadow"/><path class="cc-cable-line"/><circle r="4"/></svg>
+  <div class="cc-burst" id="cc-successBurst" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <input id="cc-file" type="file" accept="audio/*,video/*,.wav,.mp3,.m4a,.mp4,.mov,.mkv,.webm" hidden>
+  <script src="planner.js"></script>
+  <script src="audio-cache.js"></script>
+  <script src="captions.js"></script>
   <script src="quickhost.js"></script>
   <script src="home.js"></script>
   <script src="welcome.js"></script>
