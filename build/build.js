@@ -10,7 +10,7 @@
 //
 const fs = require("fs"), path = require("path"), cp = require("child_process"), os = require("os");
 
-const VERSION = "1.4.0";
+const VERSION = "1.4.1";
 const ROOT = path.resolve(__dirname, "..");
 const SRC = path.join(ROOT, "extension-staging");
 function readLocal(name, fallback) {

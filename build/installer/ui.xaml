@@ -193,7 +193,7 @@
                 </LinearGradientBrush>
               </TextBlock.Foreground>
             </TextBlock>
-            <TextBlock Text="for Adobe After Effects  ·  v1.4" Foreground="{StaticResource Muted}" FontSize="12" Margin="0,8,0,0"/>
+            <TextBlock Text="for Adobe After Effects  ·  v1.4.1" Foreground="{StaticResource Muted}" FontSize="12" Margin="0,8,0,0"/>
           </StackPanel>
 
           <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom" Margin="30,0,0,28">

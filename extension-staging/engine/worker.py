@@ -9,7 +9,11 @@ import sys
 import traceback
 
 def emit(stage, message, progress=None):
-    print(json.dumps({"stage": stage, "message": message, "progress": progress}), flush=True)
+    # the panel reads these lines from a file; if that ever goes away the job keeps running
+    try:
+        print(json.dumps({"stage": stage, "message": message, "progress": progress}), flush=True)
+    except Exception:
+        pass
 
 
 def folder_size(path):
@@ -167,7 +171,7 @@ def main():
         cmd += ["-t", str(float(request["duration"]))]
     cmd += ["-vn", "-ac", "1", "-ar", "16000", str(wav)]
     emit("prepare", "Preparing audio…", 0)
-    subprocess.run(cmd, check=True, capture_output=True, text=True)
+    subprocess.run(cmd, check=True, capture_output=True, text=True, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     import numpy as np
     import wave
     with wave.open(str(wav), "rb") as audio_file:

@@ -188,6 +188,12 @@
       setBusy(true); status('Rendering the precomp’s audio…', 'busy');
       try { attachSource(await host('renderAudio', source)); } catch (e) { setBusy(false); throw e; }
     }
+    // the model needs ~3.5 GB of free RAM while it loads; when AE's preview cache has taken it all, the panel
+    // itself runs out of memory and crashes. Free AE's image cache first in that case.
+    if (os.freemem() < 6 * 1073741824) {
+      setBusy(true); status('Freeing memory for the speech model…', 'busy');
+      try { await host('purgeMemory'); } catch (e) {} finally { setBusy(false); }
+    }
     var base = path.join(os.tmpdir(), 'sentence-studio', Date.now() + '-' + Math.random().toString(16).slice(2)); fs.mkdirSync(base, { recursive: true });
     var req = { audio: source.path, trimStart: source.trimStart || 0, duration: source.duration, ffmpeg: ffmpeg, output: path.join(base, 'result.json'), state: stateRoot,
       language: $('language').value, detectedLanguage: detectedLanguage, hints: $('hints').value,
@@ -196,23 +202,79 @@
     var request = path.join(base, 'request.json'); fs.writeFileSync(request, JSON.stringify(req));
     $('transcribe').dataset.running = '1'; setBusy(true); status('Starting local word detection…', 'busy');
     try {
-      await new Promise(function (resolve, reject) {
-        var env = Object.assign({}, process.env, { PYTHONUTF8: '1', PYTHONIOENCODING: 'utf-8', HF_HUB_DISABLE_SYMLINKS_WARNING: '1' });
-        var child = spawn(python, [path.join(EXT, 'engine', 'worker.py'), request], { windowsHide: true, env: env }), buffer = '', errorLog = '', reported = '';
-        child.stdout.on('data', function (chunk) {
-          buffer += chunk.toString(); var lines = buffer.split(/\r?\n/); buffer = lines.pop();
-          lines.forEach(function (line) { try { var item = JSON.parse(line); if (item.progress !== null && Number.isFinite(item.progress)) setProgress(item.progress); if (item.message) status(item.message, item.stage === 'error' ? 'error' : 'busy'); if (item.stage === 'error') reported = item.message; } catch (e) {} });
-        });
-        child.stderr.on('data', function (chunk) { errorLog = (errorLog + chunk.toString()).slice(-8000); });
-        child.on('error', reject);
-        child.on('close', function (code) { fs.writeFileSync(path.join(base, 'engine.log'), errorLog); if (code === 0) resolve(); else reject(Error(reported || 'Speech engine failed. See ' + path.join(base, 'engine.log'))); });
-      });
-      var result = JSON.parse(fs.readFileSync(req.output, 'utf8')), offset = Number($('offset').value);
-      words = result.words.map(function (w) { return { word: w.word, start: w.start === null ? null : w.start + offset, end: w.end === null ? null : w.end + offset, score: w.score, review: w.review }; });
-      detectedLanguage = result.language; $('transcript').value = result.transcript; needsRealign = false; renderWords(); setProgress(100);
-      status('Aligned ' + words.length + ' words · ' + result.language.toUpperCase() + '. Review, then create.', 'ok');
-      if (J) J.toast('Found ' + words.length + ' words', 'ok', 2200);
-    } finally { delete $('transcribe').dataset.running; setBusy(false); }
+      // The engine runs detached and writes its progress to a file, so a panel crash or reload doesn't kill it:
+      // the reloaded panel picks the job up again (resumeJob).
+      var env = Object.assign({}, process.env, { PYTHONUTF8: '1', PYTHONIOENCODING: 'utf-8', HF_HUB_DISABLE_SYMLINKS_WARNING: '1' });
+      var out = fs.openSync(path.join(base, 'engine-out.txt'), 'w'), err = fs.openSync(path.join(base, 'engine.log'), 'w');
+      // pythonw: a detached python.exe would open a visible console window
+      var pyw = python.replace(/python\.exe$/i, 'pythonw.exe'); if (!fs.existsSync(pyw)) pyw = python;
+      var child = spawn(pyw, [path.join(EXT, 'engine', 'worker.py'), request], { windowsHide: true, detached: true, stdio: ['ignore', out, err], env: env });
+      fs.closeSync(out); fs.closeSync(err);
+      var job = { base: base, pid: child.pid, output: req.output, offset: Number($('offset').value), started: Date.now() };
+      fs.writeFileSync(jobFile(), JSON.stringify(job));
+      await watchJob(job, child);
+      finishJob(job);
+    } finally { clearJob(); delete $('transcribe').dataset.running; setBusy(false); }
+  }
+
+  function jobFile() { return path.join(os.tmpdir(), 'sentence-studio', 'current-job.json'); }
+  function clearJob() { try { fs.unlinkSync(jobFile()); } catch (e) {} }
+  function alive(pid) { try { process.kill(pid, 0); return true; } catch (e) { return e.code === 'EPERM'; } }
+  // follows the engine's progress lines until it exits
+  function watchJob(job, child) {
+    return new Promise(function (resolve, reject) {
+      var seen = 0, reported = '', done = false, exitCode = null, finished = false, lastMessage = '', lastLine = Date.now();
+      function read() {
+        var text = ''; try { text = fs.readFileSync(path.join(job.base, 'engine-out.txt'), 'utf8'); } catch (e) {}
+        var lines = text.split(/\r?\n/);
+        for (; seen < lines.length - 1; seen++) {
+          try {
+            var item = JSON.parse(lines[seen]); lastLine = Date.now();
+            if (item.progress !== null && Number.isFinite(item.progress)) setProgress(item.progress);
+            if (item.message) { lastMessage = item.message; status(item.message, item.stage === 'error' ? 'error' : 'busy'); }
+            if (item.stage === 'error') reported = item.message;
+            if (item.stage === 'done') done = true;
+          } catch (e) {}
+        }
+      }
+      function end() {
+        if (finished) return; finished = true; clearInterval(timer); read();
+        if (done && fs.existsSync(job.output)) return resolve();
+        var log = ''; try { log = fs.readFileSync(path.join(job.base, 'engine.log'), 'utf8').trim().split(/\r?\n/).slice(-1)[0] || ''; } catch (e) {}
+        reject(Error(reported || (exitCode === null ? 'The speech engine stopped unexpectedly. Press Detect speech to run it again.' : 'Speech engine failed' + (log ? ': ' + log.slice(0, 200) : '') + '. Details: ' + path.join(job.base, 'engine.log'))));
+      }
+      // don't rely on the child's exit event alone: inside AE it isn't always delivered
+      var timer = setInterval(function () {
+        read();
+        if ((done && fs.existsSync(job.output)) || !alive(job.pid)) return end();
+        var quiet = Math.round((Date.now() - lastLine) / 1000);
+        if (lastMessage && quiet >= 3) { status(lastMessage, 'busy'); $('status').textContent += ' · ' + quiet + 's'; $('enginePhase').textContent = $('status').textContent; }
+      }, 400);
+      if (child) {
+        child.on('exit', function (code) { exitCode = code; setTimeout(end, 150); });
+        child.on('error', function (e) { exitCode = -1; reported = reported || 'Couldn’t start the speech engine: ' + e.message; end(); });
+      }
+    });
+  }
+  function finishJob(job) {
+    var result = JSON.parse(fs.readFileSync(job.output, 'utf8')), offset = job.offset;
+    $('offset').value = offset;
+    words = result.words.map(function (w) { return { word: w.word, start: w.start === null ? null : w.start + offset, end: w.end === null ? null : w.end + offset, score: w.score, review: w.review }; });
+    detectedLanguage = result.language; $('transcript').value = result.transcript; needsRealign = false; renderWords(); setProgress(100);
+    status('Aligned ' + words.length + ' words · ' + result.language.toUpperCase() + '. Review, then create.', 'ok');
+    if (J) J.toast('Found ' + words.length + ' words', 'ok', 2200);
+  }
+  // after a panel reload: carry on with (or collect) a detection that was still running
+  async function resumeJob() {
+    var job; try { job = JSON.parse(fs.readFileSync(jobFile(), 'utf8')); } catch (e) { return; }
+    if (!job || !job.base || Date.now() - job.started > 3 * 3600e3) return clearJob();
+    var running = alive(job.pid);
+    if (!running && !fs.existsSync(job.output)) { clearJob(); status('The last word detection was interrupted. Press Detect speech to run it again.', 'error'); return; }
+    $('engineProgress').hidden = false; $('transcribe').dataset.running = '1'; setBusy(true);
+    status(running ? 'Picking up the word detection that was still running…' : 'Loading the words from the last detection…', 'busy');
+    try { if (running) await watchJob(job, null); finishJob(job); }
+    catch (e) { status(e.message, 'error'); }
+    finally { clearJob(); delete $('transcribe').dataset.running; setBusy(false); }
   }
 
   async function resetSession() {
@@ -489,6 +551,7 @@
         $('offset').value = saved.offset || 0; $('transcript').value = saved.transcript || ''; if (words.length) renderWords();
       }
     } catch (e) {}
+    if (engineReady) resumeJob().catch(function () {});
 
     if (!window.__adobe_cep__) return;
     // load the AE side (re-loaded on every panel load, so updates apply without restarting AE)

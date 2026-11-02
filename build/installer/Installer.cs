@@ -36,8 +36,8 @@ using Microsoft.Win32;
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 [assembly: System.Runtime.InteropServices.ComVisible(false)]
-[assembly: AssemblyVersion("1.4.0.0")]
-[assembly: AssemblyFileVersion("1.4.0.0")]
+[assembly: AssemblyVersion("1.4.1.0")]
+[assembly: AssemblyFileVersion("1.4.1.0")]
 
 namespace JWSetup
 {
@@ -58,7 +58,7 @@ namespace JWSetup
     {
         const string AppName = "JW Preset Applicator Pro";
         const string BundleId = "com.jwpresetapplicator.pro";
-        const string Version = "1.4.0";
+        const string Version = "1.4.1";
         // Auto captions (formerly the separate Sentence Studio panel)
         const string OldCaptionsBundle = "com.foxbo.sentencestudio";
         const string OldCaptionsUninstallKey = @"Software\Microsoft\Windows\CurrentVersion\Uninstall\SentenceStudio";

@@ -462,6 +462,7 @@ var SentenceStudio = (function(){
             else if(action==='widescreen')result=buildWidescreen(args);
             else if(action==='styled')result=buildStyled(args);
             else if(action==='fonts')result=fontList();
+            else if(action==='purgeMemory'){try{app.purge(PurgeTarget.IMAGE_CACHES);}catch(purgeErr){} result={purged:true};}
             else if(action==='seek'){var c=comp();c.time=Math.max(0,Math.min(c.duration,args.time));result={time:c.time};}
             else throw Error('Unknown action');
             return encode({ok:true,result:result});
